@@ -37,7 +37,7 @@ operation_plan_for_all_calls['production_duration_sec'] = operation_plan_for_all
 
 # Дополняем таблицу временного режима столбцами временными границами с начала смены
 time_mode['duration_cumulative'] = time_mode['duration'].cumsum()
-time_mode['duration_cumulative_start'] = pd.Series([0]).append(time_mode['duration_cumulative'].shift(1).iloc[1:]).astype('int')
+time_mode['duration_cumulative_start'] = pd.Series([0])._append(time_mode['duration_cumulative'].shift(1).iloc[1:]).astype('int')
 
 # Перечисляем все ячейки из плана
 cell_list = operation_plan_for_all_calls['cell'].unique()
@@ -48,7 +48,7 @@ for i in cell_list:
   cell_plan_list.append(operation_plan_for_all_calls[operation_plan_for_all_calls['cell'] == i])
 for i in cell_plan_list:
   i['cycle_time_sec_cumulative'] = i['production_duration_sec'].cumsum()
-  i['duration_cumulative_start'] = pd.Series([0]).append(i['cycle_time_sec_cumulative'].shift(1).iloc[1:]).astype('int')
+  i['duration_cumulative_start'] = pd.Series([0])._append(i['cycle_time_sec_cumulative'].shift(1).iloc[1:]).astype('int')
 
 # Производим основные расчеты через создание посекундки
 df_list = []
@@ -80,11 +80,11 @@ for i in cell_plan_list:
   for i in df_list:
     cake_plan_with_cream = df_list[0].merge(cream_data, on=['sku', 'operation'], how='left')
     cake_plan_with_cream['cream_plan'] = cake_plan_with_cream['quantity'] * cake_plan_with_cream['gr']
-    df_list_with_cream.append(cake_plan_with_cream)
+    df_list_with_cream._append(cake_plan_with_cream)
   df_cream_list = []
   for i in df_list_with_cream:
     df_by_creams_and_time = pd.pivot_table(i, index=['time_window', 'raw_materials'], values='cream_plan', aggfunc='sum').reset_index()
-    df_cream_list.append(df_by_creams_and_time)
+    df_cream_list._append(df_by_creams_and_time)
   merged_df = pd.concat(df_cream_list, axis=0)
   cream_time = pd.pivot_table(merged_df, index=['time_window', 'raw_materials'], values='cream_plan', aggfunc='sum').reset_index()
   
