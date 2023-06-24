@@ -91,6 +91,8 @@ for i in cell_plan_list:
 
 if master_data_file:
   if plan_file:
+    st.markdown('''План''')
     for i in df_list:
       st.dataframe(i)
+    st.markdown('''Потребность в сливках''')
     st.dataframe(cream_time)
