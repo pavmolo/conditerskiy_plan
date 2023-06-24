@@ -26,7 +26,7 @@ cell_list = operation_plan_for_all_calls['cell'].unique()
 # Создаем обособленные по ячейкам планы
 cell_plan_list = []
 for i in cell_list:
-  cell_plan_list.append(operation_plan_for_all_calls[operation_plan_for_all_calls['cell'] == i])
+  cell_plan_list._append(operation_plan_for_all_calls[operation_plan_for_all_calls['cell'] == i])
 for i in cell_plan_list:
   i['cycle_time_sec_cumulative'] = i['production_duration_sec'].cumsum()
   i['duration_cumulative_start'] = pd.Series([0])._append(i['cycle_time_sec_cumulative'].shift(1).iloc[1:]).astype('int')
@@ -45,7 +45,7 @@ cell_list = operation_plan_for_all_calls['cell'].unique()
 # Создаем обособленные по ячейкам планы
 cell_plan_list = []
 for i in cell_list:
-  cell_plan_list.append(operation_plan_for_all_calls[operation_plan_for_all_calls['cell'] == i])
+  cell_plan_list._append(operation_plan_for_all_calls[operation_plan_for_all_calls['cell'] == i])
 for i in cell_plan_list:
   i['cycle_time_sec_cumulative'] = i['production_duration_sec'].cumsum()
   i['duration_cumulative_start'] = pd.Series([0])._append(i['cycle_time_sec_cumulative'].shift(1).iloc[1:]).astype('int')
@@ -75,7 +75,7 @@ for i in cell_plan_list:
   df['operation'] = df.apply(find_operation, axis=1)
   pivot_table = pd.pivot_table(df, index=['time_window', 'sku', 'operation'], aggfunc='count').reset_index().merge(operation_plan_for_all_calls[['cell', 'sku', 'operation', 'cycle_time_sec']], on=['sku', 'operation'], how='left')
   pivot_table['quantity'] = (pivot_table['Номер секунды'] / pivot_table['cycle_time_sec']).astype('int')
-  df_list.append(pivot_table[['cell', 'time_window', 'sku', 'operation', 'quantity']])
+  df_list._append(pivot_table[['cell', 'time_window', 'sku', 'operation', 'quantity']])
   df_list_with_cream = []
   for i in df_list:
     cake_plan_with_cream = df_list[0].merge(cream_data, on=['sku', 'operation'], how='left')
