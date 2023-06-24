@@ -75,16 +75,16 @@ for i in cell_plan_list:
   df['operation'] = df.apply(find_operation, axis=1)
   pivot_table = pd.pivot_table(df, index=['time_window', 'sku', 'operation'], aggfunc='count').reset_index().merge(operation_plan_for_all_calls[['cell', 'sku', 'operation', 'cycle_time_sec']], on=['sku', 'operation'], how='left')
   pivot_table['quantity'] = (pivot_table['Номер секунды'] / pivot_table['cycle_time_sec']).astype('int')
-  df_list._append(pivot_table[['cell', 'time_window', 'sku', 'operation', 'quantity']])
+  df_list.append(pivot_table[['cell', 'time_window', 'sku', 'operation', 'quantity']])
   df_list_with_cream = []
   for i in df_list:
     cake_plan_with_cream = df_list[0].merge(cream_data, on=['sku', 'operation'], how='left')
     cake_plan_with_cream['cream_plan'] = cake_plan_with_cream['quantity'] * cake_plan_with_cream['gr']
-    df_list_with_cream._append(cake_plan_with_cream)
+    df_list_with_cream.append(cake_plan_with_cream)
   df_cream_list = []
   for i in df_list_with_cream:
     df_by_creams_and_time = pd.pivot_table(i, index=['time_window', 'raw_materials'], values='cream_plan', aggfunc='sum').reset_index()
-    df_cream_list._append(df_by_creams_and_time)
+    df_cream_list.append(df_by_creams_and_time)
   merged_df = pd.concat(df_cream_list, axis=0)
   cream_time = pd.pivot_table(merged_df, index=['time_window', 'raw_materials'], values='cream_plan', aggfunc='sum').reset_index()
   
