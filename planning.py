@@ -9,7 +9,7 @@ plan_file = st.file_uploader("Выберите XLSX файл с планом", a
 
 cycle_time_table = pd.read_excel(master_data_file, sheet_name='cycle_time_table')
 time_mode = pd.read_excel(master_data_file, sheet_name='time_mode')
-
+cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
 current_plan = pd.read_excel(plan_file, sheet_name='current_date')
 
 # Объединяем таблицы с циклами и планом
@@ -57,7 +57,21 @@ for i in cell_plan_list:
   pivot_table = pd.pivot_table(df, index=['time_window', 'sku', 'operation'], aggfunc='count').reset_index().merge(operation_plan_for_all_calls[['cell', 'sku', 'operation', 'cycle_time_sec']], on=['sku', 'operation'], how='left')
   pivot_table['quantity'] = (pivot_table['Номер секунды'] / pivot_table['cycle_time_sec']).astype('int')
   df_list.append(pivot_table[['cell', 'time_window', 'sku', 'quantity']])
+  df_list_with_cream = []
+  for i in df_list:
+    cake_plan_with_cream = df_list[0].merge(cream_data, on=['sku', 'operation'], how='left')
+    cake_plan_with_cream['cream_plan'] = cake_plan_with_cream['quantity'] * cake_plan_with_cream['gr']
+    df_list_with_cream.append(cake_plan_with_cream)
+  df_cream_list = []
+  for i in df_list_with_cream:
+    df_by_creams_and_time = pd.pivot_table(i, index=['time_window', 'raw_materials'], values='cream_plan', aggfunc='sum').reset_index()
+    df_cream_list.append(df_by_creams_and_time)
+  merged_df = pd.concat(df_cream_list, axis=0)
+  cream_time = pd.pivot_table(merged_df, index=['time_window', 'raw_materials'], values='cream_plan', aggfunc='sum').reset_index()
+  
+
 if master_data_file:
   if plan_file:
     for i in df_list:
       st.dataframe(i)
+    st.dataframe(cream_time)
