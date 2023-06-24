@@ -18,7 +18,7 @@ operation_plan_for_all_calls['production_duration_sec'] = operation_plan_for_all
 
 # Дополняем таблицу временного режима столбцами временными границами с начала смены
 time_mode['duration_cumulative'] = time_mode['duration'].cumsum()
-time_mode['duration_cumulative_start'] = pd.Series([0]).append(time_mode['duration_cumulative'].shift(1).iloc[1:]).astype('int')
+time_mode['duration_cumulative_start'] = pd.Series([0])._append(time_mode['duration_cumulative'].shift(1).iloc[1:]).astype('int')
 
 # Перечисляем все ячейки из плана
 cell_list = operation_plan_for_all_calls['cell'].unique()
