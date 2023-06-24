@@ -31,6 +31,25 @@ for i in cell_plan_list:
   i['cycle_time_sec_cumulative'] = i['production_duration_sec'].cumsum()
   i['duration_cumulative_start'] = pd.Series([0])._append(i['cycle_time_sec_cumulative'].shift(1).iloc[1:]).astype('int')
 
+# Объединяем таблицы с циклами и планом
+operation_plan_for_all_calls = current_plan.merge(cycle_time_table, on=['sku', 'operation'], how='left')
+operation_plan_for_all_calls['production_duration_sec'] = operation_plan_for_all_calls['quantity'] * operation_plan_for_all_calls['cycle_time_sec']
+
+# Дополняем таблицу временного режима столбцами временными границами с начала смены
+time_mode['duration_cumulative'] = time_mode['duration'].cumsum()
+time_mode['duration_cumulative_start'] = pd.Series([0]).append(time_mode['duration_cumulative'].shift(1).iloc[1:]).astype('int')
+
+# Перечисляем все ячейки из плана
+cell_list = operation_plan_for_all_calls['cell'].unique()
+
+# Создаем обособленные по ячейкам планы
+cell_plan_list = []
+for i in cell_list:
+  cell_plan_list.append(operation_plan_for_all_calls[operation_plan_for_all_calls['cell'] == i])
+for i in cell_plan_list:
+  i['cycle_time_sec_cumulative'] = i['production_duration_sec'].cumsum()
+  i['duration_cumulative_start'] = pd.Series([0]).append(i['cycle_time_sec_cumulative'].shift(1).iloc[1:]).astype('int')
+
 # Производим основные расчеты через создание посекундки
 df_list = []
 for i in cell_plan_list:
@@ -50,13 +69,13 @@ for i in cell_plan_list:
         if i['duration_cumulative_start'][j] <= row['Номер секунды'] <= i['cycle_time_sec_cumulative'][j]:
             return i['operation'][j]
     return None
-  
+
   df['time_window'] = df.apply(find_time_window, axis=1)
   df['sku'] = df.apply(find_sku, axis=1)
   df['operation'] = df.apply(find_operation, axis=1)
   pivot_table = pd.pivot_table(df, index=['time_window', 'sku', 'operation'], aggfunc='count').reset_index().merge(operation_plan_for_all_calls[['cell', 'sku', 'operation', 'cycle_time_sec']], on=['sku', 'operation'], how='left')
   pivot_table['quantity'] = (pivot_table['Номер секунды'] / pivot_table['cycle_time_sec']).astype('int')
-  df_list.append(pivot_table[['cell', 'time_window', 'sku', 'quantity']])
+  df_list.append(pivot_table[['cell', 'time_window', 'sku', 'operation', 'quantity']])
   df_list_with_cream = []
   for i in df_list:
     cake_plan_with_cream = df_list[0].merge(cream_data, on=['sku', 'operation'], how='left')
