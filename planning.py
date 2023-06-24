@@ -3,14 +3,13 @@ import numpy as np
 import pandas as pd
 
 st.markdown('Загрузите файл с мастер данными')
-master_data_file = st.file_uploader("Выберите XLSX файл", accept_multiple_files=False)
+master_data_file = st.file_uploader("Выберите XLSX файл с мастер данными", accept_multiple_files=False)
 st.markdown('Загрузите файл с планом')
-plan_file = st.file_uploader("Выберите XLSX файл", accept_multiple_files=False)
+plan_file = st.file_uploader("Выберите XLSX файл с планом", accept_multiple_files=False)
 
 cycle_time_table = pd.read_excel(master_data_file, sheet_name='cycle_time_table')
-
-
 time_mode = pd.read_excel(master_data_file, sheet_name='time_mode')
+
 current_plan = pd.read_excel(plan_file, sheet_name='current_date')
 
 # Объединяем таблицы с циклами и планом
