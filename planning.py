@@ -26,7 +26,7 @@ cell_list = operation_plan_for_all_calls['cell'].unique()
 # Создаем обособленные по ячейкам планы
 cell_plan_list = []
 for i in cell_list:
-  cell_plan_list._append(operation_plan_for_all_calls[operation_plan_for_all_calls['cell'] == i])
+  cell_plan_list.append(operation_plan_for_all_calls[operation_plan_for_all_calls['cell'] == i])
 for i in cell_plan_list:
   i['cycle_time_sec_cumulative'] = i['production_duration_sec'].cumsum()
   i['duration_cumulative_start'] = pd.Series([0])._append(i['cycle_time_sec_cumulative'].shift(1).iloc[1:]).astype('int')
