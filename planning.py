@@ -102,8 +102,8 @@ if master_data_file:
       cream_time = cream_time[cream_time['cream_plan'] != 0]
     
 
-    st.markdown('''План''')
+    st.title('План по ячейкам')
     for i in df_list:
       st.dataframe(i)
-    st.markdown('''Потребность в сливках''')
+    st.title('Потребность в сливках')
     st.dataframe(cream_time)
