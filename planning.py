@@ -1,7 +1,8 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-
+st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
+st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
 st.markdown('Загрузите файл с мастер данными')
 master_data_file = st.file_uploader("Выберите XLSX файл с мастер данными", accept_multiple_files=False)
 st.markdown('Загрузите файл с планом')
@@ -105,5 +106,5 @@ if master_data_file:
     st.title('План по ячейкам')
     for i in df_list:
       st.dataframe(i)
-    st.title('Потребность в сливках')
+    st.title('Потребность в сырье')
     st.dataframe(cream_time)
