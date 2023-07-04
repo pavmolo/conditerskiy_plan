@@ -9,10 +9,10 @@ st.markdown('''<h1>Приложение для разбивки плана по 
 col1, col2 = st.columns(2)
 
 with col1:
-  st.markdown('''<h3>Загрузите файл с мастер данными</h3>''', unsafe_allow_html=True)
+  st.markdown('''<h3>Файл с мастер данными</h3>''', unsafe_allow_html=True)
   master_data_file = st.file_uploader("Выберите XLSX файл с мастер данными", accept_multiple_files=False)
 with col2:
-  st.markdown('''<h3>Загрузите файл с планом</h3>''', unsafe_allow_html=True)
+  st.markdown('''<h3>Файл с планом</h3>''', unsafe_allow_html=True)
   plan_file = st.file_uploader("Выберите XLSX файл с планом", accept_multiple_files=False)
 if master_data_file:
   if plan_file:
