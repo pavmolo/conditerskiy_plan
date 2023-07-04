@@ -6,10 +6,14 @@ from pyxlsb import open_workbook as open_xlsb
 
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
-st.markdown('''<h3>Загрузите файл с мастер данными</h3>''', unsafe_allow_html=True)
-master_data_file = st.file_uploader("Выберите XLSX файл с мастер данными", accept_multiple_files=False)
-st.markdown('''<h3>Загрузите файл с планом</h3>''', unsafe_allow_html=True)
-plan_file = st.file_uploader("Выберите XLSX файл с планом", accept_multiple_files=False)
+col1, col2 = st.columns(2)
+
+with col1:
+  st.markdown('''<h3>Загрузите файл с мастер данными</h3>''', unsafe_allow_html=True)
+  master_data_file = st.file_uploader("Выберите XLSX файл с мастер данными", accept_multiple_files=False)
+with col2:
+  st.markdown('''<h3>Загрузите файл с планом</h3>''', unsafe_allow_html=True)
+  plan_file = st.file_uploader("Выберите XLSX файл с планом", accept_multiple_files=False)
 if master_data_file:
   if plan_file:
     cycle_time_table = pd.read_excel(master_data_file, sheet_name='cycle_time_table')
