@@ -1,6 +1,9 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+from io import BytesIO
+from pyxlsb import open_workbook as open_xlsb
+
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
 st.markdown('Загрузите файл с мастер данными')
@@ -108,3 +111,18 @@ if master_data_file:
       st.dataframe(i)
     st.title('Потребность в сырье')
     st.dataframe(cream_time)
+    def to_excel(df):
+      output = BytesIO()
+      writer = pd.ExcelWriter(output, engine='xlsxwriter')
+      cream_time.to_excel(writer, index=False, sheet_name='cream_time')
+      workbook = writer.book
+      worksheet = writer.sheets['cream_time']
+      format1 = workbook.add_format({'num_format': '0.00'}) 
+      worksheet.set_column('A:A', None, format1)  
+      writer.save()
+      processed_data = output.getvalue()
+      return processed_data
+    df_xlsx = to_excel(df)
+    st.download_button(label='📥 Download Current Result',
+                       data=df_xlsx ,
+                       file_name= 'Safia_Plan.xlsx')
