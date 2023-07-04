@@ -111,14 +111,17 @@ if master_data_file:
       st.dataframe(i)
     st.title('Потребность в сырье')
     st.dataframe(cream_time)
-    def to_excel(df):
+    def to_excel():
       output = BytesIO()
       writer = pd.ExcelWriter(output, engine='xlsxwriter')
       cream_time.to_excel(writer, index=False, sheet_name='cream_time')
+      with writer as w:
+        for i in df_list:
+          i.to_excel(w, sheet_name=i['cell'][0])
       writer._save()
       processed_data = output.getvalue()
       return processed_data
-    df_xlsx = to_excel(df)
+    df_xlsx = to_excel()
     st.download_button(label='📥 Скачать план в Excel',
                        data=df_xlsx ,
                        file_name= 'Safia_Plan.xlsx')
