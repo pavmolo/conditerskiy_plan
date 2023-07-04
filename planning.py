@@ -89,7 +89,7 @@ if master_data_file:
       
       df_list_with_cream = []
       for i in df_list:
-        cake_plan_with_cream = df_list[0].merge(cream_data, on=['sku', 'operation'], how='left')
+        cake_plan_with_cream = i.merge(cream_data, on=['sku', 'operation'], how='left')
         cake_plan_with_cream['cream_plan'] = cake_plan_with_cream['quantity'] * cake_plan_with_cream['gr']
         df_list_with_cream.append(cake_plan_with_cream)
       df_cream_list = []
