@@ -119,7 +119,7 @@ if master_data_file:
       worksheet = writer.sheets['cream_time']
       format1 = workbook.add_format({'num_format': '0.00'}) 
       worksheet.set_column('A:A', None, format1)  
-      writer.save()
+      writer._save()
       processed_data = output.getvalue()
       return processed_data
     df_xlsx = to_excel(df)
