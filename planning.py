@@ -6,9 +6,9 @@ from pyxlsb import open_workbook as open_xlsb
 
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
-st.markdown('''<h2>Загрузите файл с мастер данными</h2>''')
+st.markdown('''<h2>Загрузите файл с мастер данными</h2>''', unsafe_allow_html=True)
 master_data_file = st.file_uploader("Выберите XLSX файл с мастер данными", accept_multiple_files=False)
-st.markdown('''<h2>Загрузите файл с планом</h2>''')
+st.markdown('''<h2>Загрузите файл с планом</h2>''', unsafe_allow_html=True)
 plan_file = st.file_uploader("Выберите XLSX файл с планом", accept_multiple_files=False)
 if master_data_file:
   if plan_file:
