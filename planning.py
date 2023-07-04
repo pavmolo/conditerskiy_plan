@@ -109,6 +109,7 @@ if master_data_file:
       cream_time = cream_time.sort_values('time_window')
       cream_time = cream_time[cream_time['cream_plan'] != 0]
     
+    st.title('Почасовка готова')
     with st.expander("Посмотреть таблицы"):
       st.title('План по ячейкам')
       for i in df_list:
