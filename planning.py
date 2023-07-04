@@ -115,14 +115,10 @@ if master_data_file:
       output = BytesIO()
       writer = pd.ExcelWriter(output, engine='xlsxwriter')
       cream_time.to_excel(writer, index=False, sheet_name='cream_time')
-      workbook = writer.book
-      worksheet = writer.sheets['cream_time']
-      format1 = workbook.add_format({'num_format': '0.00'}) 
-      worksheet.set_column('A:A', None, format1)  
       writer._save()
       processed_data = output.getvalue()
       return processed_data
     df_xlsx = to_excel(df)
-    st.download_button(label='📥 Download Current Result',
+    st.download_button(label='📥 Скачать план в Excel',
                        data=df_xlsx ,
                        file_name= 'Safia_Plan.xlsx')
