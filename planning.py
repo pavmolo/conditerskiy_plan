@@ -117,7 +117,7 @@ if master_data_file:
       cream_time.to_excel(writer, index=False, sheet_name='cream_time')
       with writer as w:
         for i in df_list:
-          i.to_excel(w, sheet_name=i['cell'][0])
+          i.to_excel(w, sheet_name=i['cell'][0].replace('/', '-'))
       writer._save()
       processed_data = output.getvalue()
       return processed_data
