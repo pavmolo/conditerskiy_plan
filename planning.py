@@ -109,12 +109,12 @@ if master_data_file:
       cream_time = cream_time.sort_values('time_window')
       cream_time = cream_time[cream_time['cream_plan'] != 0]
     
-
-    st.title('План по ячейкам')
-    for i in df_list:
-      st.dataframe(i)
-    st.title('Потребность в сырье')
-    st.dataframe(cream_time)
+    with st.expander("Посмотреть таблицы"):
+      st.title('План по ячейкам')
+      for i in df_list:
+        st.dataframe(i)
+      st.title('Потребность в сырье')
+      st.dataframe(cream_time)
     def to_excel():
       output = BytesIO()
       writer = pd.ExcelWriter(output, engine='xlsxwriter')
