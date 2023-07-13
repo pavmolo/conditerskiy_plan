@@ -91,7 +91,8 @@ if master_data_file:
       pivot_table['time_window'] = pd.Categorical(pivot_table['time_window'], categories=cat_values, ordered=True)
       pivot_table = pivot_table.sort_values('time_window')
       df_list.append(pivot_table[['cell', 'time_window', 'sku', 'operation', 'quantity']])
-    
+    for i in cell_plan_list:
+      i.fillna(0, inplace=True)
     #____________________________________________________
       
       df_list_with_cream = []
