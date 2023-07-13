@@ -62,7 +62,8 @@ if master_data_file:
     for i in cell_plan_list:
       i['cycle_time_sec_cumulative'] = i['production_duration_sec'].cumsum()
       i['duration_cumulative_start'] = pd.Series([0])._append(i['cycle_time_sec_cumulative'].shift(1).iloc[1:]).astype('int')
-    
+    for i in cell_plan_list:
+      i.fillna(0, inplace=True)
     # Производим основные расчеты через создание посекундки
     df_list = []
     for i in cell_plan_list:
@@ -91,8 +92,7 @@ if master_data_file:
       pivot_table['time_window'] = pd.Categorical(pivot_table['time_window'], categories=cat_values, ordered=True)
       pivot_table = pivot_table.sort_values('time_window')
       df_list.append(pivot_table[['cell', 'time_window', 'sku', 'operation', 'quantity']])
-    for i in cell_plan_list:
-      i.fillna(0, inplace=True)
+
     #____________________________________________________
       
       df_list_with_cream = []
