@@ -92,7 +92,8 @@ if master_data_file:
       pivot_table = pd.pivot_table(df, index=['time_window', 'sku', 'operation'], aggfunc='count').reset_index().merge(operation_plan_for_all_calls[['cell', 'sku', 'operation', 'cycle_time_sec']], on=['sku', 'operation'], how='left')
       pivot_table['quantity'] = (pivot_table['Номер секунды'] / pivot_table['cycle_time_sec']).astype('int')
       pivot_table['time_window'] = pd.Categorical(pivot_table['time_window'], categories=cat_values, ordered=True)
-      pivot_table = pivot_table.sort_values('time_window')
+      pivot_table['sku'] = pd.Categorical(pivot_table['sku'], categories=cat_values_plan, ordered=True)
+      pivot_table = pivot_table.sort_values(['sku', 'time_window'])
       df_list.append(pivot_table[['cell', 'time_window', 'sku', 'operation', 'quantity']])
 
     #____________________________________________________
