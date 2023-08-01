@@ -96,6 +96,13 @@ if master_data_file:
       pivot_table = pivot_table.sort_values(['sku', 'time_window'])
       df_list.append(pivot_table[['cell', 'time_window', 'sku', 'operation', 'quantity']])
 
+    cell_final_time = []
+    for i in df_list:
+      cell_i = i['cell'][0]
+      final_time_i = i['time_window'][-1]
+      cell_final_time.append([cell_i, final_time_i)
+    cell_final_time = pd.DataFrame(cell_final_time, columns=['Ячейка', 'Окончание задания'])
+
     #____________________________________________________
       
       df_list_with_cream = []
@@ -119,6 +126,7 @@ if master_data_file:
       st.title('План по ячейкам')
       for i in df_list:
         st.dataframe(i)
+      st.dataframe(cell_final_time)
       if len(merged_df) > 0:
         st.title('Потребность в сырье')
         st.dataframe(cream_time)
