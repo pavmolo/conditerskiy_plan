@@ -119,8 +119,8 @@ if master_data_file:
       st.title('План по ячейкам')
       for i in df_list:
         st.dataframe(i)
-      st.title('Потребность в сырье')
       if len(merged_df) > 0:
+        st.title('Потребность в сырье')
         st.dataframe(cream_time)
     def to_excel():
       output = BytesIO()
