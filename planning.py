@@ -100,7 +100,7 @@ if master_data_file:
     for i in df_list:
       cell_i = i['cell'][0]
       final_time_i = i['time_window'][-1]
-      cell_final_time.append([cell_i, final_time_i)
+      cell_final_time.append([cell_i, final_time_i])
     cell_final_time = pd.DataFrame(cell_final_time, columns=['Ячейка', 'Окончание задания'])
 
     #____________________________________________________
@@ -126,6 +126,7 @@ if master_data_file:
       st.title('План по ячейкам')
       for i in df_list:
         st.dataframe(i)
+      st.title('Окончание задания для каждой ячейки')
       st.dataframe(cell_final_time)
       if len(merged_df) > 0:
         st.title('Потребность в сырье')
