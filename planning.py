@@ -136,6 +136,7 @@ if master_data_file:
       writer = pd.ExcelWriter(output, engine='xlsxwriter')
       if len(merged_df) > 0:
         cream_time.to_excel(writer, index=False, sheet_name='cream_time')
+      cell_final_time.to_excel(writer, index=False, sheet_name='cell_final_time')
       with writer as w:
         for i in df_list:
           i.to_excel(w, sheet_name=i['cell'][0].replace('/', '-'))
