@@ -105,10 +105,11 @@ if master_data_file:
         df_by_creams_and_time = pd.pivot_table(i, index=['time_window', 'raw_materials'], values='cream_plan', aggfunc='sum').reset_index()
         df_cream_list.append(df_by_creams_and_time)
       merged_df = pd.concat(df_cream_list, axis=0)
-      cream_time = pd.pivot_table(merged_df, index=['time_window', 'raw_materials'], values='cream_plan', aggfunc='sum').reset_index()
-      cream_time['time_window'] = pd.Categorical(cream_time['time_window'], categories=cat_values, ordered=True)
-      cream_time = cream_time.sort_values('time_window')
-      cream_time = cream_time[cream_time['cream_plan'] != 0]
+      if len(merged_df) > 0:
+        cream_time = pd.pivot_table(merged_df, index=['time_window', 'raw_materials'], values='cream_plan', aggfunc='sum').reset_index()
+        cream_time['time_window'] = pd.Categorical(cream_time['time_window'], categories=cat_values, ordered=True)
+        cream_time = cream_time.sort_values('time_window')
+        cream_time = cream_time[cream_time['cream_plan'] != 0]
     
     st.title('Почасовка готова')
     with st.expander("Посмотреть таблицы"):
@@ -116,11 +117,13 @@ if master_data_file:
       for i in df_list:
         st.dataframe(i)
       st.title('Потребность в сырье')
-      st.dataframe(cream_time)
+      if len(merged_df) > 0:
+        st.dataframe(cream_time)
     def to_excel():
       output = BytesIO()
       writer = pd.ExcelWriter(output, engine='xlsxwriter')
-      cream_time.to_excel(writer, index=False, sheet_name='cream_time')
+      if len(merged_df) > 0:
+        cream_time.to_excel(writer, index=False, sheet_name='cream_time')
       with writer as w:
         for i in df_list:
           i.to_excel(w, sheet_name=i['cell'][0].replace('/', '-'))
