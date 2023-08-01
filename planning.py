@@ -96,12 +96,6 @@ if master_data_file:
       pivot_table = pivot_table.sort_values(['sku', 'time_window'])
       df_list.append(pivot_table[['cell', 'time_window', 'sku', 'operation', 'quantity']])
 
-      cell_final_time = []
-      for i in df_list:
-        cell_i = i['cell'][0]
-        final_time_i = i['time_window'][-1]
-        cell_final_time.append([cell_i, final_time_i])
-      cell_final_time = pd.DataFrame(cell_final_time, columns=['Ячейка', 'Окончание задания'])
 
     #____________________________________________________
       
@@ -121,6 +115,12 @@ if master_data_file:
         cream_time = cream_time.sort_values('time_window')
         cream_time = cream_time[cream_time['cream_plan'] != 0]
     
+    cell_final_time = []
+    for i in df_list:
+      cell_i = i['cell'][0]
+      final_time_i = i['time_window'][-1]
+      cell_final_time.append([cell_i, final_time_i])
+    cell_final_time = pd.DataFrame(cell_final_time, columns=['Ячейка', 'Окончание задания'])
     st.title('Почасовка готова')
     with st.expander("Посмотреть таблицы"):
       st.title('План по ячейкам')
