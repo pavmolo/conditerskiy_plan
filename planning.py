@@ -117,8 +117,8 @@ if master_data_file:
     
     cell_final_time = []
     for i in df_list:
-      cell_i = i['cell'][0]
-      final_time_i = i['time_window'][-1]
+      cell_i = i['cell'].iloc[0]
+      final_time_i = i['time_window'].iloc[-1]
       cell_final_time.append([cell_i, final_time_i])
     cell_final_time = pd.DataFrame(cell_final_time, columns=['Ячейка', 'Окончание задания'])
     st.title('Почасовка готова')
