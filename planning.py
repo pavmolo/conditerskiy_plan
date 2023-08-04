@@ -17,6 +17,7 @@ with col2:
 if master_data_file:
   if plan_file:
     cycle_time_table = pd.read_excel(master_data_file, sheet_name='cycle_time_table')
+    cycle_time_table['cycle_time_sec'] = cycle_time_table['cycle_time_sec'].astype('int')
     time_mode = pd.read_excel(master_data_file, sheet_name='time_mode')
     cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
     current_plan = pd.read_excel(plan_file, sheet_name='current_date')
