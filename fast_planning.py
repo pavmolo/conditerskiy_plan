@@ -93,10 +93,6 @@ if master_data_file:
     time_mode = pd.read_excel(master_data_file, sheet_name='time_mode')
     cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
     current_plan = pd.read_excel(plan_file, sheet_name='current_date')
-    cat_values = time_mode['start']
-    cat_values_plan = current_plan['sku']
-    time_mode['start'] = pd.Categorical(time_mode['start'], categories=cat_values, ordered=True)
-    current_plan['sku'] = pd.Categorical(current_plan['sku'], categories=cat_values_plan, ordered=True)
 
 
     # Пример использования
