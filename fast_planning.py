@@ -121,7 +121,7 @@ if master_data_file:
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
     dfdf = []
     for df in dataframes:
-      dfdf.append(df.sort_values(by=['hour_interval', 'operation']))
+      dfdf.append(df.sort_values(by=['operation', 'hour_interval']))
     with st.expander("Посмотреть таблицы"):
       st.title('План по ячейкам')
       for i in dfdf:
