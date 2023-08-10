@@ -54,7 +54,7 @@ def distribute_operations(time_mode, cycles, plan):
         if cell_result:  # Проверяем, не пуст ли список
             df = pd.DataFrame(cell_result)
             # Устанавливаем порядок для столбца operation
-            df['operation'] = pd.Categorical(df['operation'].unique(), categories=cycles['operation'], ordered=True)
+            df['operation'] = pd.Categorical(df['operation'], categories=cycles['operation'].unique(), ordered=True)
             dfs.append(df.sort_values(by=['operation', 'hour_interval']))
 
 
