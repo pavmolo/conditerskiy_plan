@@ -47,7 +47,9 @@ def distribute_operations(time_mode, cycles, plan):
                     total_time -= allocated_time
                     time_row['remaining_time'] -= allocated_time
                     operation_row['total_time'] = total_time
-
+                    # Обновляем количество операций в plan
+                    idx = cell_operations[cell_operations['operation'] == operation].index[0]
+                    cell_operations.at[idx, 'total_time'] = total_time
         if cell_result:  # Проверяем, не пуст ли список
             dfs.append(pd.DataFrame(cell_result).sort_values(by='hour_interval'))
 
