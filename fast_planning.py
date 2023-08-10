@@ -116,24 +116,24 @@ if master_data_file:
     
 
 
-dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
-dfdf = []
-for df in dataframes:
-  dfdf.append(df.sort_values(by=['hour_interval', 'operation']))
-with st.expander("Посмотреть таблицы"):
-  st.title('План по ячейкам')
-  for i in dfdf:
-    st.dataframe(i)
-def to_excel():
-  output = BytesIO()
-  writer = pd.ExcelWriter(output, engine='xlsxwriter')
-  with writer as w:
-    for i in dfdf:
-      i.to_excel(w, sheet_name=i['cell'][0].replace('/', '-'))
-  writer._save()
-  processed_data = output.getvalue()
-  return processed_data
-df_xlsx = to_excel()
-st.download_button(label='📥 Скачать план в Excel',
-                   data=df_xlsx ,
-                   file_name= 'Safia_Plan.xlsx')
+    dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
+    dfdf = []
+    for df in dataframes:
+      dfdf.append(df.sort_values(by=['hour_interval', 'operation']))
+    with st.expander("Посмотреть таблицы"):
+      st.title('План по ячейкам')
+      for i in dfdf:
+        st.dataframe(i)
+    def to_excel():
+      output = BytesIO()
+      writer = pd.ExcelWriter(output, engine='xlsxwriter')
+      with writer as w:
+        for i in dfdf:
+          i.to_excel(w, sheet_name=i['cell'][0].replace('/', '-'))
+      writer._save()
+      processed_data = output.getvalue()
+      return processed_data
+    df_xlsx = to_excel()
+    st.download_button(label='📥 Скачать план в Excel',
+                       data=df_xlsx ,
+                       file_name= 'Safia_Plan.xlsx')
