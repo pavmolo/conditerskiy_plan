@@ -5,61 +5,6 @@ from io import BytesIO
 from pyxlsb import open_workbook as open_xlsb
 
 
-def distribute_operations(time_mode, cycles, plan):
-    # Объединяем данные из plan и cycles по операциям
-    merged_plan = plan.merge(cycles, on='operation', how='left')
-
-    # Вычисляем общее время выполнения для каждой операции
-    merged_plan['total_time'] = merged_plan['cycle_time'] * merged_plan['quantity']
-
-    # Получаем уникальные ячейки
-    unique_cells = merged_plan['cell'].unique()
-
-    dfs = []
-
-    for cell in unique_cells:
-        cell_operations = merged_plan[merged_plan['cell'] == cell].copy()
-        time_mode_copy = time_mode.copy()
-        time_mode_copy['remaining_time'] = time_mode_copy['working_seconds']
-
-        cell_result = []
-
-        for _, time_row in time_mode_copy.iterrows():
-            for _, operation_row in cell_operations.iterrows():
-                operation = operation_row['operation']
-                total_time = operation_row['total_time']
-                cycle_time = operation_row['cycle_time']
-
-                if total_time <= 0:
-                    continue
-
-                # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
-                operations_count = min(total_time // cycle_time, time_row['remaining_time'] // cycle_time)
-
-                if operations_count > 0:
-                    cell_result.append({
-                        'hour_interval': time_row['hour_interval'],
-                        'operation': operation,
-                        'operations_count': operations_count
-                    })
-
-                    allocated_time = operations_count * cycle_time
-                    total_time -= allocated_time
-                    time_row['remaining_time'] -= allocated_time
-                    operation_row['total_time'] = total_time
-                    # Обновляем количество операций в plan
-                    idx = cell_operations[cell_operations['operation'] == operation].index[0]
-                    cell_operations.at[idx, 'total_time'] = total_time
-                    
-        if cell_result:  # Проверяем, не пуст ли список
-            df = pd.DataFrame(cell_result)
-            # Устанавливаем порядок для столбца operation
-            df['operation'] = pd.Categorical(df['operation'], categories=cycles['operation'].unique(), ordered=True)
-            df['hour_interval'] = pd.Categorical(df['hour_interval'], categories=time_mode['start'], ordered=True)
-            dfs.append(df.sort_values(by=['operation', 'hour_interval']))
-
-
-    return dfs
 
 
 
@@ -117,6 +62,61 @@ if master_data_file:
     plan_df = pd.DataFrame(plan_data)
     #______________________________________________________________________
     
+    def distribute_operations(time_mode, cycles, plan):
+    # Объединяем данные из plan и cycles по операциям
+    merged_plan = plan.merge(cycles, on='operation', how='left')
+
+    # Вычисляем общее время выполнения для каждой операции
+    merged_plan['total_time'] = merged_plan['cycle_time'] * merged_plan['quantity']
+
+    # Получаем уникальные ячейки
+    unique_cells = merged_plan['cell'].unique()
+
+    dfs = []
+
+    for cell in unique_cells:
+        cell_operations = merged_plan[merged_plan['cell'] == cell].copy()
+        time_mode_copy = time_mode.copy()
+        time_mode_copy['remaining_time'] = time_mode_copy['working_seconds']
+
+        cell_result = []
+
+        for _, time_row in time_mode_copy.iterrows():
+            for _, operation_row in cell_operations.iterrows():
+                operation = operation_row['operation']
+                total_time = operation_row['total_time']
+                cycle_time = operation_row['cycle_time']
+
+                if total_time <= 0:
+                    continue
+
+                # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
+                operations_count = min(total_time // cycle_time, time_row['remaining_time'] // cycle_time)
+
+                if operations_count > 0:
+                    cell_result.append({
+                        'hour_interval': time_row['hour_interval'],
+                        'operation': operation,
+                        'operations_count': operations_count
+                    })
+
+                    allocated_time = operations_count * cycle_time
+                    total_time -= allocated_time
+                    time_row['remaining_time'] -= allocated_time
+                    operation_row['total_time'] = total_time
+                    # Обновляем количество операций в plan
+                    idx = cell_operations[cell_operations['operation'] == operation].index[0]
+                    cell_operations.at[idx, 'total_time'] = total_time
+                    
+        if cell_result:  # Проверяем, не пуст ли список
+            df = pd.DataFrame(cell_result)
+            # Устанавливаем порядок для столбца operation
+            df['operation'] = pd.Categorical(df['operation'], categories=cycles['operation'].unique(), ordered=True)
+            df['hour_interval'] = pd.Categorical(df['hour_interval'], categories=time_mode['start'], ordered=True)
+            dfs.append(df.sort_values(by=['operation', 'hour_interval']))
+
+
+    return dfs
 
 
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
