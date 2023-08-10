@@ -50,8 +50,12 @@ def distribute_operations(time_mode, cycles, plan):
                     # Обновляем количество операций в plan
                     idx = cell_operations[cell_operations['operation'] == operation].index[0]
                     cell_operations.at[idx, 'total_time'] = total_time
+                    
         if cell_result:  # Проверяем, не пуст ли список
-            dfs.append(pd.DataFrame(cell_result).sort_values(by='hour_interval'))
+            df = pd.DataFrame(cell_result)
+            # Устанавливаем порядок для столбца operation
+            df['operation'] = pd.Categorical(df['operation'], categories=cycles['operation'], ordered=True)
+            dfs.append(df.sort_values(by=['operation', 'hour_interval']))
 
 
     return dfs
