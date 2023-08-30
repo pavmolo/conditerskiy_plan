@@ -54,8 +54,8 @@ def distribute_operations(time_mode_var, cycles, plan):
                 time_row['remaining_time'] -= allocated_time
 
             # Если для текущей операции больше нет времени, прерываем цикл временных окон
-            if total_time <= 0:
-                break
+            if total_time <= 0 or time_row['remaining_time'] <= 0:
+              break
 
             time_index += 1
 
