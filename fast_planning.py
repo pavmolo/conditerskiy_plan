@@ -30,7 +30,7 @@ def distribute_operations(time_mode_var, cycles, plan):
 
               if total_time <= 0:
                   continue
-                            # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
+              # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
               operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
               if operations_count > 0:
                 cell_result.append({
@@ -54,34 +54,6 @@ def distribute_operations(time_mode_var, cycles, plan):
                   df['hour_interval'] = pd.Categorical(df['hour_interval'], categories=time_mode['start'], ordered=True)
                   df['cell'] = cell
                   dfs.append(df.sort_values(by=['operation', 'hour_interval']))
-    
-    
-    return dfs
-
-              if operations_count > 0:
-                  cell_result.append({
-                      'hour_interval': time_row['hour_interval'],
-                      'operation': operation,
-                      'operations_count': operations_count
-                  })
-
-                  allocated_time = operations_count * cycle_time
-                  total_time -= allocated_time
-                  time_row['remaining_time'] -= allocated_time
-                  operation_row['total_time'] = total_time
-                  # Обновляем количество операций в plan
-                  idx = cell_operations[cell_operations['operation'] == operation].index[0]
-                  cell_operations.at[idx, 'total_time'] = total_time
-
-      if cell_result:  # Проверяем, не пуст ли список
-          df = pd.DataFrame(cell_result)
-          # Устанавливаем порядок для столбца operation
-          df['operation'] = pd.Categorical(df['operation'], categories=current_plan['sku'], ordered=True)
-          df['hour_interval'] = pd.Categorical(df['hour_interval'], categories=time_mode['start'], ordered=True)
-          df['cell'] = cell
-          dfs.append(df.sort_values(by=['operation', 'hour_interval']))
-
-
   return dfs
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
