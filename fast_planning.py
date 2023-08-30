@@ -22,8 +22,6 @@ def distribute_operations(time_mode_var, cycles, plan):
 
       cell_result = []
 
-      time_index = 0  # начальный индекс для временных окон
-
       for _, operation_row in cell_operations.iterrows():
           operation = operation_row['operation']
           total_time = operation_row['total_time']
@@ -32,8 +30,10 @@ def distribute_operations(time_mode_var, cycles, plan):
           if total_time <= 0:
               continue
 
-          while total_time > 0 and time_index < len(time_mode_copy):
-              time_row = time_mode_copy.iloc[time_index]
+          for time_index, time_row in time_mode_copy.iterrows():
+              # Если оставшееся время в текущем временном окне меньше времени цикла, переходим к следующему окну
+              if time_row['remaining_time'] < cycle_time:
+                  continue
 
               # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
               operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
@@ -50,7 +50,9 @@ def distribute_operations(time_mode_var, cycles, plan):
                   time_row['remaining_time'] -= allocated_time
                   operation_row['total_time'] = total_time
 
-              time_index += 1  # переходим к следующему временному окну
+              # Если для текущей операции больше нет времени, прерываем цикл временных окон
+              if total_time <= 0:
+                  break
 
       if cell_result:  # Проверяем, не пуст ли список
           df = pd.DataFrame(cell_result)
