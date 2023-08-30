@@ -49,7 +49,7 @@ def distribute_operations(time_mode_var, cycles, plan):
     
                     allocated_time = operations_count * cycle_time
                     total_time -= allocated_time
-                    time_row['remaining_time'] -= allocated_time
+                    time_mode_copy.at[time_index, 'remaining_time'] -= allocated_time
     
                 # Если для текущей операции больше нет времени, прерываем цикл временных окон
                 if total_time <= 0:
