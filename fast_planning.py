@@ -24,31 +24,35 @@ def distribute_operations(time_mode_var, cycles, plan):
       cell_result = []
   
       for _, time_row in time_mode_copy.iterrows():
-          for _, operation_row in cell_operations.iterrows():
-              operation = operation_row['operation']
-              total_time = operation_row['total_time']
-              cycle_time = operation_row['cycle_time']
-  
-              if total_time <= 0:
-                  continue
-  
-              # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
-              operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
-  
-              if operations_count > 0:
-                  cell_result.append({
-                      'hour_interval': time_row['hour_interval'],
-                      'operation': operation,
-                      'operations_count': operations_count
-                  })
-  
-                  allocated_time = operations_count * cycle_time
-                  total_time -= allocated_time
-                  time_row['remaining_time'] -= allocated_time
-                  operation_row['total_time'] = total_time
-                  # Обновляем количество операций в plan
-                  idx = cell_operations[cell_operations['operation'] == operation].index[0]
-                  cell_operations.at[idx, 'total_time'] = total_time
+        for _, operation_row in cell_operations.iterrows():
+            operation = operation_row['operation']
+            total_time = operation_row['total_time']
+            cycle_time = operation_row['cycle_time']
+    
+            if total_time <= 0:
+                continue
+    
+            # Проверяем, есть ли достаточно времени для завершения операции
+            while time_row['remaining_time'] < cycle_time and total_time > 0:
+                # Переходим к следующему часовому интервалу
+                time_row = next(time_mode_copy.iterrows())[1]
+    
+            operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
+    
+            if operations_count > 0:
+                cell_result.append({
+                    'hour_interval': time_row['hour_interval'],
+                    'operation': operation,
+                    'operations_count': operations_count
+                })
+    
+                allocated_time = operations_count * cycle_time
+                total_time -= allocated_time
+                time_row['remaining_time'] -= allocated_time
+                operation_row['total_time'] = total_time
+                # Обновляем количество операций в plan
+                idx = cell_operations[cell_operations['operation'] == operation].index[0]
+                cell_operations.at[idx, 'total_time'] = total_time
                   
       if cell_result:  # Проверяем, не пуст ли список
           df = pd.DataFrame(cell_result)
