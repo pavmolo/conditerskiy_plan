@@ -4,34 +4,27 @@ import pandas as pd
 from io import BytesIO
 from pyxlsb import open_workbook as open_xlsb
 def distribute_operations(time_mode_var, cycles, plan):
-    # Объединяем данные из plan и cycles по операциям
     merged_plan = plan.merge(cycles, on='operation', how='left')
-    
-    # Вычисляем общее время выполнения для каждой операции
     merged_plan['total_time'] = merged_plan['cycle_time'] * merged_plan['quantity']
-    
-    # Получаем уникальные ячейки
     unique_cells = merged_plan['cell'].unique()
-    
     dfs = []
-    
+
     for cell in unique_cells:
         cell_operations = merged_plan[merged_plan['cell'] == cell].copy()
-        time_mode_copy = time_mode_var.copy()
-        time_mode_copy['remaining_time'] = time_mode_copy['working_seconds']
-        
         cell_result = []
-        
+
         for _, operation_row in cell_operations.iterrows():
             operation = operation_row['operation']
             total_time = operation_row['total_time']
             cycle_time = operation_row['cycle_time']
 
-            if total_time <= 0:
-                continue
+            time_mode_copy = time_mode_var.copy()
+            time_mode_copy['remaining_time'] = time_mode_copy['working_seconds']
 
             for _, time_row in time_mode_copy.iterrows():
-                # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
+                if total_time <= 0:
+                    break
+
                 operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
 
                 if operations_count > 0:
@@ -44,23 +37,16 @@ def distribute_operations(time_mode_var, cycles, plan):
                     allocated_time = operations_count * cycle_time
                     total_time -= allocated_time
                     time_row['remaining_time'] -= allocated_time
-                    operation_row['total_time'] = total_time
-                    # Обновляем количество операций в plan
-                    idx = cell_operations[cell_operations['operation'] == operation].index[0]
-                    cell_operations.at[idx, 'total_time'] = total_time
 
-                if total_time <= 0:
-                    break
-                    
-        if cell_result:  # Проверяем, не пуст ли список
+        if cell_result:
             df = pd.DataFrame(cell_result)
-            # Устанавливаем порядок для столбца operation
             df['operation'] = pd.Categorical(df['operation'], categories=current_plan['sku'], ordered=True)
             df['hour_interval'] = pd.Categorical(df['hour_interval'], categories=time_mode['start'], ordered=True)
             df['cell'] = cell
             dfs.append(df.sort_values(by=['operation', 'hour_interval']))
-    
+
     return dfs
+
 
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
