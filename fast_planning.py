@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from io import BytesIO
 from pyxlsb import open_workbook as open_xlsb
-
 def distribute_operations(time_mode_var, cycles, plan):
   # Объединяем данные из plan и cycles по операциям
   merged_plan = plan.merge(cycles, on='operation', how='left')
@@ -13,8 +12,7 @@ def distribute_operations(time_mode_var, cycles, plan):
   
   # Получаем уникальные ячейки
   unique_cells = merged_plan['cell'].unique()
-  cell_operations['operation'] = pd.Categorical(cell_operations['operation'], categories=plan['operation'], ordered=True)
-  cell_operations = cell_operations.sort_values('operation')
+  
   dfs = []
   
   for cell in unique_cells:
@@ -32,10 +30,10 @@ def distribute_operations(time_mode_var, cycles, plan):
   
               if total_time <= 0:
                   continue
-  
+
               # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
               operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
-              
+
               if operations_count > 0:
                   cell_result.append({
                       'hour_interval': time_row['hour_interval'],
@@ -61,11 +59,9 @@ def distribute_operations(time_mode_var, cycles, plan):
   
   
   return dfs
-
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
 col1, col2 = st.columns(2)
-
 with col1:
   st.markdown('''<h3>Файл с мастер данными</h3>''', unsafe_allow_html=True)
   master_data_file = st.file_uploader("Выберите XLSX файл с мастер данными", accept_multiple_files=False)
@@ -79,8 +75,6 @@ if master_data_file:
     time_mode = pd.read_excel(master_data_file, sheet_name='time_mode')
     cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
     current_plan = pd.read_excel(plan_file, sheet_name='current_date')
-
-
     # Пример использования
     time_mode_data = {
         'hour_interval': time_mode['start'],
@@ -104,8 +98,6 @@ if master_data_file:
     #______________________________________________________________________
     
     
-
-
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
     dfdf = []
     for df in dataframes:
