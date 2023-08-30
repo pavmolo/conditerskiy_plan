@@ -39,6 +39,7 @@ def distribute_operations(time_mode_var, cycles, plan):
                 time_index += 1
                 continue
 
+
             # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
             operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
 
@@ -55,9 +56,8 @@ def distribute_operations(time_mode_var, cycles, plan):
 
             # Если для текущей операции больше нет времени, прерываем цикл временных окон
             if total_time <= 0 or time_row['remaining_time'] <= 0:
-              break
-
-            time_index += 1
+              time_index += 1
+              continue
 
     if cell_result:  # Проверяем, не пуст ли список
         df = pd.DataFrame(cell_result)
