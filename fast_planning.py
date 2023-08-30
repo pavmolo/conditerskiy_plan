@@ -16,14 +16,15 @@ def distribute_operations(time_mode_var, cycles, plan):
     
     dfs = []
     
-    for cell in unique_cells:
+        for cell in unique_cells:
         cell_operations = merged_plan[merged_plan['cell'] == cell].copy()
         time_mode_copy = time_mode_var.copy()
         time_mode_copy['remaining_time'] = time_mode_copy['working_seconds']
 
         cell_result = []
 
-        time_index = 0
+        time_index = 0  # Инициализируем индекс временного окна перед началом всех операций для ячейки
+
         for _, operation_row in cell_operations.iterrows():
             operation = operation_row['operation']
             total_time = operation_row['total_time']
