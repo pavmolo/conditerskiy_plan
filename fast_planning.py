@@ -28,10 +28,13 @@ def distribute_operations(time_mode_var, cycles, plan):
     
             while total_time > 0 and time_index < len(time_mode_copy):
                 time_row = time_mode_copy.iloc[time_index]
-            
+                
                 # Если оставшееся время в текущем временном окне меньше времени цикла, переходим к следующему окну
                 if time_row['remaining_time'] < cycle_time:
                     time_index += 1
+                    if time_index >= len(time_mode_copy):  # Если вышли за пределы, прерываем цикл
+                        break
+                    time_row = time_mode_copy.iloc[time_index]  # Обновляем time_row
                     continue
     
                 # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
