@@ -43,7 +43,7 @@ def distribute_operations(time_mode_var, cycles, plan):
     
                 if operations_count > 0:
                     cell_result.append({
-                        'hour_interval': time_row,
+                        'hour_interval': time_row['hour_interval'],
                         'operation': operation,
                         'operations_count': operations_count
                     })
