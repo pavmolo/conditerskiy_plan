@@ -27,24 +27,27 @@ def distribute_operations(time_mode_var, cycles, plan):
 
             while total_time > 0 and time_index < len(time_mode_copy):
                 time_row = time_mode_copy.iloc[time_index]
-
+            
                 if time_row['remaining_time'] < cycle_time:
                     time_index += 1
-                    continue
-
+                    if time_index < len(time_mode_copy):  # Проверяем, не вышли ли мы за пределы списка временных окон
+                        time_row = time_mode_copy.iloc[time_index]
+                    else:
+                        break
+            
                 operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
-
+            
                 if operations_count > 0:
                     cell_result.append({
                         'hour_interval': time_row['hour_interval'],
                         'operation': operation,
                         'operations_count': operations_count
                     })
-
+            
                     allocated_time = operations_count * cycle_time
                     total_time -= allocated_time
                     time_row['remaining_time'] -= allocated_time
-
+            
                 if total_time <= 0:
                     break
 
