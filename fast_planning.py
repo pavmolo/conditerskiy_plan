@@ -16,56 +16,56 @@ def distribute_operations(time_mode_var, cycles, plan):
   dfs = []
   
   for cell in unique_cells:
-    cell_operations = merged_plan[merged_plan['cell'] == cell].copy()
-    time_mode_copy = time_mode_var.copy()
-    time_mode_copy['remaining_time'] = time_mode_copy['working_seconds']
-
-    cell_result = []
-
-    time_index = 0
-    for _, operation_row in cell_operations.iterrows():
-        operation = operation_row['operation']
-        total_time = operation_row['total_time']
-        cycle_time = operation_row['cycle_time']
-
-        if total_time <= 0:
-            continue
-
-        while total_time > 0 and time_index < len(time_mode_copy):
-            time_row = time_mode_copy.iloc[time_index]
-
-            # Если оставшееся время в текущем временном окне меньше времени цикла, переходим к следующему окну
-            if time_row['remaining_time'] < cycle_time:
-                time_index += 1
-                continue
-
-            # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
-            operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
-
-            if operations_count > 0:
-                cell_result.append({
-                    'hour_interval': time_row['hour_interval'],
-                    'operation': operation,
-                    'operations_count': operations_count
-                })
-
-                allocated_time = operations_count * cycle_time
-                total_time -= allocated_time
-                time_row['remaining_time'] -= allocated_time
-
-            # Если для текущей операции больше нет времени, прерываем цикл временных окон
+        cell_operations = merged_plan[merged_plan['cell'] == cell].copy()
+        time_mode_copy = time_mode_var.copy()
+        time_mode_copy['remaining_time'] = time_mode_copy['working_seconds']
+  
+        cell_result = []
+  
+        time_index = 0
+        for _, operation_row in cell_operations.iterrows():
+            operation = operation_row['operation']
+            total_time = operation_row['total_time']
+            cycle_time = operation_row['cycle_time']
+  
             if total_time <= 0:
-                break
-
-            time_index += 1
-
-    if cell_result:  # Проверяем, не пуст ли список
-        df = pd.DataFrame(cell_result)
-        # Устанавливаем порядок для столбца operation
-        df['operation'] = pd.Categorical(df['operation'], categories=current_plan['sku'], ordered=True)
-        df['hour_interval'] = pd.Categorical(df['hour_interval'], categories=time_mode['start'], ordered=True)
-        df['cell'] = cell
-        dfs.append(df.sort_values(by=['operation', 'hour_interval']))
+                continue
+  
+            while total_time > 0 and time_index < len(time_mode_copy):
+                time_row = time_mode_copy.iloc[time_index]
+  
+                # Если оставшееся время в текущем временном окне меньше времени цикла, переходим к следующему окну
+                if time_row['remaining_time'] < cycle_time:
+                    time_index += 1
+                    continue
+  
+                # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
+                operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
+  
+                if operations_count > 0:
+                    cell_result.append({
+                        'hour_interval': time_row['hour_interval'],
+                        'operation': operation,
+                        'operations_count': operations_count
+                    })
+  
+                    allocated_time = operations_count * cycle_time
+                    total_time -= allocated_time
+                    time_row['remaining_time'] -= allocated_time
+  
+                # Если для текущей операции больше нет времени, прерываем цикл временных окон
+                if total_time <= 0:
+                    break
+  
+                time_index += 1
+  
+        if cell_result:  # Проверяем, не пуст ли список
+            df = pd.DataFrame(cell_result)
+            # Устанавливаем порядок для столбца operation
+            df['operation'] = pd.Categorical(df['operation'], categories=current_plan['sku'], ordered=True)
+            df['hour_interval'] = pd.Categorical(df['hour_interval'], categories=time_mode['start'], ordered=True)
+            df['cell'] = cell
+            dfs.append(df.sort_values(by=['operation', 'hour_interval']))
   return dfs
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
