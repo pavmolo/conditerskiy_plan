@@ -34,7 +34,10 @@ def distribute_operations(time_mode_var, cycles, plan):
   
               # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
               operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
-  
+              # Если операция не может быть завершена в текущем временном окне, переходим к следующему
+              while operations_count == 0 and total_time > 0:
+                  time_row = next(time_mode_copy.iterrows())[1]
+                  operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
               if operations_count > 0:
                   cell_result.append({
                       'hour_interval': time_row['hour_interval'],
