@@ -59,7 +59,11 @@ def distribute_operations(time_mode_var, cycles, plan):
             dfs.append(df.sort_values(by=['operation', 'hour_interval']))
 
     return dfs
+st.write("Содержимое time_mode:")
+st.dataframe(time_mode)
 
+missing_values = merged_data[~merged_data['hour_interval'].isin(time_mode['start'])]['hour_interval'].unique()
+st.write("Значения hour_interval, отсутствующие в time_mode:", missing_values)
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
 col1, col2 = st.columns(2)
