@@ -114,18 +114,22 @@ if master_data_file and plan_file:
 
     try:
         cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
-        cream_data_dict = {
-            'operation': cream_data['operation'],
-            'raw_materials': cream_data['raw_materials'],
-            'gr': cream_data['gr']
-        }
-        cream_data_df = pd.DataFrame(cream_data_dict)
+    except Exception as e:
+        st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
+        cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
 
-        raw_materials_df = calculate_raw_materials_from_dfs(dataframes, cream_data_df)
+    raw_materials_df = calculate_raw_materials_from_dfs(dataframes, cream_data)
 
-        with st.expander("Посмотреть таблицы с сырьем"):
-            st.title('Потребность в сырье')
-            st.dataframe(raw_materials_df)
+    with st.expander("Посмотреть таблицы"):
+        st.title('План по ячейкам')
+        for df in dataframes:
+            cell_name = df['cell'].iloc[0]
+            st.markdown(f"### {cell_name}")
+            st.dataframe(df.drop(columns=['cell']))
+        
+        st.title('Потребность в сырье')
+        st.dataframe(raw_materials_df)
+
     except Exception as e:
         st.warning(f"Ошибка при обработке данных о сырье: {e}")
 
