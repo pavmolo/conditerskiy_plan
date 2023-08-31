@@ -127,6 +127,20 @@ if master_data_file and plan_file:
     raw_materials_df = raw_materials_df.sort_values(by=['hour_interval', 'raw_materials'])
     st.write("Данные о сырье после объединения:")
     st.dataframe(raw_materials_df)
+    def get_final_times(dataframes):
+        final_times_list = []
+        for df in dataframes:
+            cell_name = df['cell'].iloc[0]
+            final_time_window = df['hour_interval'].iloc[-1]
+            final_times_list.append({
+                'cell': cell_name,
+                'final_time_window': final_time_window
+            })
+        return pd.DataFrame(final_times_list)
+    
+    final_times = get_final_times(dataframes)
+    st.write("Таблица final_times:")
+    st.dataframe(final_times)
 
     def to_excel():
         output = BytesIO()
@@ -135,6 +149,7 @@ if master_data_file and plan_file:
             for df in dataframes:
                 df.to_excel(w, sheet_name=df['cell'].iloc[0].replace('/', '-'))
             raw_materials_df.to_excel(w, sheet_name='cream_data')  # Добавляем таблицу с сырьем в отдельный лист
+            final_times.to_excel(w, sheet_name='final_times')  # Добавляем таблицу final_times в отдельный лист
         writer._save()
         return output.getvalue()
 
