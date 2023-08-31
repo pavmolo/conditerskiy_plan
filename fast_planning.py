@@ -102,7 +102,20 @@ if master_data_file and plan_file:
     plan_df = pd.DataFrame(plan_data)
 
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
+    
+    try:
+        cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
+        st.write("Данные о сырье до объединения:")
+        st.dataframe(cream_data)
+    except Exception as e:
+        st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
+        cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
 
+    raw_materials_df = calculate_raw_materials_from_dfs(dataframes, cream_data)
+
+    st.write("Данные о сырье после объединения:")
+    st.dataframe(raw_materials_df)
+    
     try:
         cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
     except Exception as e:
