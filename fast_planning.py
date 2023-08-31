@@ -112,8 +112,8 @@ if master_data_file and plan_file:
             st.markdown(f"### {cell_name}")
             st.dataframe(df.drop(columns=['cell']))
 
-        try:
-            cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
+    try:
+        cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
         except Exception as e:
             st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
             cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
@@ -130,8 +130,8 @@ if master_data_file and plan_file:
             st.title('Потребность в сырье')
             st.dataframe(raw_materials_df)
 
-        except Exception as e:
-            st.warning(f"Ошибка при обработке данных о сырье: {e}")
+    except Exception as e:
+        st.warning(f"Ошибка при обработке данных о сырье: {e}")
 
     def to_excel():
         output = BytesIO()
