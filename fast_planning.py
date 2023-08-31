@@ -107,15 +107,15 @@ if master_data_file and plan_file:
 
     try:
         cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
-        st.write("Данные о сырье до объединения:")
-        st.dataframe(cream_data)
+        #st.write("Данные о сырье до объединения:")
+        #st.dataframe(cream_data)
     except Exception as e:
         st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
         cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
 
     # Проверим содержимое all_data
-    st.write("Содержимое all_data:")
-    st.dataframe(pd.concat(dataframes))
+    #st.write("Содержимое all_data:")
+    #st.dataframe(pd.concat(dataframes))
 
     # Объединяем данные без использования категориальных данных
     all_data_non_cat = pd.concat(dataframes).astype(str)
@@ -134,6 +134,7 @@ if master_data_file and plan_file:
         with writer as w:
             for df in dataframes:
                 df.to_excel(w, sheet_name=df['cell'].iloc[0].replace('/', '-'))
+            raw_materials_df.to_excel(w, sheet_name='cream_data')  # Добавляем таблицу с сырьем в отдельный лист
         writer._save()
         return output.getvalue()
 
