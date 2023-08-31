@@ -121,6 +121,7 @@ if master_data_file and plan_file:
 
     # Объединяем данные без использования категориальных данных
     all_data_non_cat = pd.concat(dataframes).astype(str)
+    merged_data = all_data_non_cat.merge(cream_data, left_on='operation', right_on='sku', how='inner')
     # Устанавливаем порядок категорий для столбца 'hour_interval'
     merged_data['hour_interval'] = pd.Categorical(merged_data['hour_interval'], categories=time_mode_data['hour_interval'], ordered=True)
 
