@@ -124,7 +124,7 @@ if master_data_file and plan_file:
     merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
     raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
     raw_materials_df['hour_interval'] = pd.Categorical(df['hour_interval'], categories=time_mode['start'], ordered=True)
-    raw_materials_df = raw_materials_df.sort_values(by=['hour_interval']
+    raw_materials_df = raw_materials_df.sort_values(by=['hour_interval'])
     st.write("Данные о сырье после объединения:")
     st.dataframe(raw_materials_df)
 
