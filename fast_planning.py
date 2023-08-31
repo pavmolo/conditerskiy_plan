@@ -60,17 +60,6 @@ def distribute_operations(time_mode_var, cycles, plan):
 
     return dfs
 
-def calculate_raw_materials_from_dfs(dataframes, cream_data):
-    all_data = pd.concat(dataframes)
-    # Объединяем данные
-    merged_data = all_data.merge(cream_data, on='operation', how='inner')
-    
-    # Продолжаем обработку данных
-    merged_data['total_gr'] = merged_data['operations_count'] * merged_data['gr']
-    raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
-    
-    return raw_materials_df[raw_materials_df['total_gr'] > 0]
-
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
 col1, col2 = st.columns(2)
@@ -124,8 +113,16 @@ if master_data_file and plan_file:
         st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
         cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
 
-    raw_materials_df = calculate_raw_materials_from_dfs(dataframes, cream_data)
-    raw_materials_df = raw_materials_df.astype(str)
+    # Проверим содержимое all_data
+    st.write("Содержимое all_data:")
+    st.dataframe(pd.concat(dataframes))
+
+    # Объединяем данные без использования категориальных данных
+    all_data_non_cat = pd.concat(dataframes).astype(str)
+    merged_data = all_data_non_cat.merge(cream_data.astype(str), on='operation', how='inner')
+    merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
+    raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
+
     st.write("Данные о сырье после объединения:")
     st.dataframe(raw_materials_df)
 
