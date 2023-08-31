@@ -119,7 +119,8 @@ if master_data_file and plan_file:
 
     # Объединяем данные без использования категориальных данных
     all_data_non_cat = pd.concat(dataframes).astype(str)
-    merged_data = all_data_non_cat.merge(cream_data.astype(str), on='operation', how='inner')
+    # Переименовываем столбец 'sku' в 'operation' перед объединением
+    merged_data = all_data_non_cat.merge(cream_data.rename(columns={'sku': 'operation'}).astype(str), on='operation', how='inner')
     merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
     raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
 
