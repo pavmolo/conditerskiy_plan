@@ -120,7 +120,7 @@ if master_data_file and plan_file:
     # Объединяем данные без использования категориальных данных
     all_data_non_cat = pd.concat(dataframes).astype(str)
     # Устанавливаем порядок категорий для столбца 'hour_interval'
-    merged_data['hour_interval'] = pd.Categorical(merged_data['hour_interval'], categories=time_mode_df['hour_interval'], ordered=True)
+    merged_data['hour_interval'] = pd.Categorical(merged_data['hour_interval'], categories=time_mode['start'], ordered=True)
 
     # Группируем и суммируем данные
     raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
