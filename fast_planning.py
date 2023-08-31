@@ -62,16 +62,11 @@ def distribute_operations(time_mode_var, cycles, plan):
 
 def calculate_raw_materials_from_dfs(dataframes, cream_data):
     all_data = pd.concat(dataframes)
-    merged_data = all_data.merge(cream_data, on='operation', how='left')
+    # Объединяем данные
+    merged_data = all_data.merge(cream_data, on='operation', how='inner')
     
-    # Обрабатываем категориальные столбцы перед заполнением пропущенных значений
-    for col in merged_data.select_dtypes(include=['category']).columns:
-        if 0 not in merged_data[col].cat.categories:
-            merged_data[col] = merged_data[col].cat.add_categories([0])
-    
-    merged_data.fillna(0, inplace=True)
+    # Продолжаем обработку данных
     merged_data['total_gr'] = merged_data['operations_count'] * merged_data['gr']
-    
     raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
     
     return raw_materials_df[raw_materials_df['total_gr'] > 0]
