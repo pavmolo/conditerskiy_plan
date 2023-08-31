@@ -60,6 +60,13 @@ def distribute_operations(time_mode_var, cycles, plan):
 
     return dfs
 
+def calculate_raw_materials_from_dfs(dataframes, cream_data):
+    all_data = pd.concat(dataframes)
+    merged_data = all_data.merge(cream_data, on='operation', how='left')
+    merged_data['total_raw'] = merged_data['operations_count'] * merged_data['gr'].fillna(0)
+    raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials']).sum()['total_raw'].reset_index()
+    return raw_materials_df
+
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
 col1, col2 = st.columns(2)
@@ -104,7 +111,24 @@ if master_data_file and plan_file:
             cell_name = df['cell'].iloc[0]
             st.markdown(f"### {cell_name}")
             st.dataframe(df.drop(columns=['cell']))
-        
+
+    try:
+        cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
+        cream_data_dict = {
+            'operation': cream_data['operation'],
+            'raw_materials': cream_data['raw_materials'],
+            'gr': cream_data['gr']
+        }
+        cream_data_df = pd.DataFrame(cream_data_dict)
+
+        raw_materials_df = calculate_raw_materials_from_dfs(dataframes, cream_data_df)
+
+        with st.expander("Посмотреть таблицы с сырьем"):
+            st.title('Потребность в сырье')
+            st.dataframe(raw_materials_df)
+    except Exception as e:
+        st.warning(f"Ошибка при обработке данных о сырье: {e}")
+
     def to_excel():
         output = BytesIO()
         writer = pd.ExcelWriter(output, engine='xlsxwriter')
