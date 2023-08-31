@@ -119,10 +119,14 @@ if master_data_file and plan_file:
 
     # Объединяем данные без использования категориальных данных
     all_data_non_cat = pd.concat(dataframes).astype(str)
-    # Объединяем по столбцам 'operation' и 'sku'
-    merged_data = all_data_non_cat.merge(cream_data, left_on='operation', right_on='sku', how='inner')
-    merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
+    # Устанавливаем порядок категорий для столбца 'hour_interval'
+    merged_data['hour_interval'] = pd.Categorical(merged_data['hour_interval'], categories=time_mode_df['hour_interval'], ordered=True)
+
+    # Группируем и суммируем данные
     raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
+
+    # Сортируем данные по временным окнам
+    raw_materials_df = raw_materials_df.sort_values(by='hour_interval')
 
     st.write("Данные о сырье после объединения:")
     st.dataframe(raw_materials_df)
