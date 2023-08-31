@@ -62,8 +62,8 @@ def distribute_operations(time_mode_var, cycles, plan):
 
 def calculate_raw_materials_from_dfs(dataframes, cream_data):
     all_data = pd.concat(dataframes)
-    merged_data = all_data.merge(cream_data, on='operation', how='left')
-    merged_data['total_raw'] = merged_data['operations_count'] * merged_data['gr'].fillna(0)
+    merged_data = all_data.merge(cream_data, on='operation', how='left').fillna(0)
+    merged_data['total_raw'] = merged_data['operations_count'] * merged_data['gr']
     raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials']).sum()['total_raw'].reset_index()
     return raw_materials_df
 
