@@ -2,7 +2,6 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 from io import BytesIO
-from pyxlsb import open_workbook as open_xlsb
 
 def distribute_operations(time_mode_var, cycles, plan):
     merged_plan = plan.merge(cycles, on='operation', how='left')
@@ -29,15 +28,13 @@ def distribute_operations(time_mode_var, cycles, plan):
             while total_time > 0 and time_index < len(time_mode_copy):
                 time_row = time_mode_copy.iloc[time_index]
                 
-                # Если оставшееся время в текущем временном окне меньше времени цикла, переходим к следующему окну
                 if time_row['remaining_time'] < cycle_time:
                     time_index += 1
-                    if time_index >= len(time_mode_copy):  # Если вышли за пределы, прерываем цикл
+                    if time_index >= len(time_mode_copy):
                         break
-                    time_row = time_mode_copy.iloc[time_index]  # Обновляем time_row
+                    time_row = time_mode_copy.iloc[time_index]
                     continue
     
-                # Вычисляем, сколько операций можно выполнить в текущем часовом интервале
                 operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
     
                 if operations_count > 0:
@@ -51,13 +48,11 @@ def distribute_operations(time_mode_var, cycles, plan):
                     total_time -= allocated_time
                     time_mode_copy.at[time_index, 'remaining_time'] -= allocated_time
     
-                # Если для текущей операции больше нет времени, прерываем цикл временных окон
                 if total_time <= 0:
                     break
     
-        if cell_result:  # Проверяем, не пуст ли список
+        if cell_result:
             df = pd.DataFrame(cell_result)
-            # Устанавливаем порядок для столбца operation
             df['operation'] = pd.Categorical(df['operation'], categories=current_plan['sku'], ordered=True)
             df['hour_interval'] = pd.Categorical(df['hour_interval'], categories=time_mode['start'], ordered=True)
             df['cell'] = cell
@@ -102,19 +97,20 @@ if master_data_file and plan_file:
     plan_df = pd.DataFrame(plan_data)
 
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
-    dfdf = [df.sort_values(by=['operation', 'hour_interval']) for df in dataframes]
 
     with st.expander("Посмотреть таблицы"):
         st.title('План по ячейкам')
-        for i in dfdf:
-            st.dataframe(i)
+        for df in dataframes:
+            cell_name = df['cell'].iloc[0]
+            st.subheader(cell_name)
+            st.dataframe(df.drop(columns=['cell']))
 
     def to_excel():
         output = BytesIO()
         writer = pd.ExcelWriter(output, engine='xlsxwriter')
         with writer as w:
-            for i in dfdf:
-                i.to_excel(w, sheet_name=i['cell'][0].replace('/', '-'))
+            for df in dataframes:
+                df.to_excel(w, sheet_name=df['cell'].iloc[0].replace('/', '-'))
         writer._save()
         return output.getvalue()
 
