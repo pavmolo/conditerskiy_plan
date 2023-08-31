@@ -99,11 +99,11 @@ if master_data_file and plan_file:
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
 
     with st.expander("Посмотреть таблицы"):
-    st.title('План по ячейкам')
-    for df in dataframes:
-        cell_name = df['cell'].iloc[0]
-        st.markdown(f"### {cell_name}")
-        st.dataframe(df.drop(columns=['cell']))
+        st.title('План по ячейкам')
+        for df in dataframes:
+            cell_name = df['cell'].iloc[0]
+            st.markdown(f"### {cell_name}")
+            st.dataframe(df.drop(columns=['cell']))
         
     def to_excel():
         output = BytesIO()
