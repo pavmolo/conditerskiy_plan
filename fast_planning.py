@@ -53,6 +53,8 @@ def distribute_operations(time_mode_var, cycles, plan):
     
         if cell_result:
             df = pd.DataFrame(cell_result)
+            df['operation'] = pd.Categorical(df['operation'], categories=current_plan['sku'], ordered=True)
+            df['hour_interval'] = pd.Categorical(df['hour_interval'], categories=time_mode['start'], ordered=True)
             df['cell'] = cell
             dfs.append(df.sort_values(by=['operation', 'hour_interval']))
 
@@ -61,9 +63,10 @@ def distribute_operations(time_mode_var, cycles, plan):
 def calculate_raw_materials_from_dfs(dataframes, cream_data):
     all_data = pd.concat(dataframes)
     merged_data = all_data.merge(cream_data, on='operation', how='left').fillna(0)
-    merged_data['total_raw'] = merged_data['operations_count'] * merged_data['gr']
-    raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials']).sum()['total_raw'].reset_index()
-    return raw_materials_df
+    merged_data['total_gr'] = merged_data['operations_count'] * merged_data['gr']
+    
+    raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
+    return raw_materials_df[raw_materials_df['total_gr'] > 0]
 
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
@@ -102,7 +105,14 @@ if master_data_file and plan_file:
     plan_df = pd.DataFrame(plan_data)
 
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
-    
+
+    with st.expander("Посмотреть таблицы"):
+        st.title('План по ячейкам')
+        for df in dataframes:
+            cell_name = df['cell'].iloc[0]
+            st.markdown(f"### {cell_name}")
+            st.dataframe(df.drop(columns=['cell']))
+
     try:
         cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
         st.write("Данные о сырье до объединения:")
@@ -115,24 +125,6 @@ if master_data_file and plan_file:
 
     st.write("Данные о сырье после объединения:")
     st.dataframe(raw_materials_df)
-    
-    try:
-        cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
-    except Exception as e:
-        st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
-        cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
-
-    raw_materials_df = calculate_raw_materials_from_dfs(dataframes, cream_data)
-
-    with st.expander("Посмотреть таблицы"):
-        st.title('План по ячейкам')
-        for df in dataframes:
-            cell_name = df['cell'].iloc[0]
-            st.markdown(f"### {cell_name}")
-            st.dataframe(df.drop(columns=['cell']))
-        
-        st.title('Потребность в сырье')
-        st.dataframe(raw_materials_df)
 
     def to_excel():
         output = BytesIO()
