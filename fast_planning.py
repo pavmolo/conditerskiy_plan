@@ -130,8 +130,8 @@ if master_data_file and plan_file:
             st.title('Потребность в сырье')
             st.dataframe(raw_materials_df)
 
-    except Exception as e:
-        st.warning(f"Ошибка при обработке данных о сырье: {e}")
+        except Exception as e:
+            st.warning(f"Ошибка при обработке данных о сырье: {e}")
 
     def to_excel():
         output = BytesIO()
