@@ -53,8 +53,6 @@ def distribute_operations(time_mode_var, cycles, plan):
     
         if cell_result:
             df = pd.DataFrame(cell_result)
-            df['operation'] = pd.Categorical(df['operation'], categories=current_plan['sku'], ordered=True)
-            df['hour_interval'] = pd.Categorical(df['hour_interval'], categories=time_mode['start'], ordered=True)
             df['cell'] = cell
             dfs.append(df.sort_values(by=['operation', 'hour_interval']))
 
@@ -105,33 +103,23 @@ if master_data_file and plan_file:
 
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
 
+    try:
+        cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
+    except Exception as e:
+        st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
+        cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
+
+    raw_materials_df = calculate_raw_materials_from_dfs(dataframes, cream_data)
+
     with st.expander("Посмотреть таблицы"):
         st.title('План по ячейкам')
         for df in dataframes:
             cell_name = df['cell'].iloc[0]
             st.markdown(f"### {cell_name}")
             st.dataframe(df.drop(columns=['cell']))
-
-    try:
-        cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
-        except Exception as e:
-            st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
-            cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
-    
-        raw_materials_df = calculate_raw_materials_from_dfs(dataframes, cream_data)
-    
-        with st.expander("Посмотреть таблицы"):
-            st.title('План по ячейкам')
-            for df in dataframes:
-                cell_name = df['cell'].iloc[0]
-                st.markdown(f"### {cell_name}")
-                st.dataframe(df.drop(columns=['cell']))
-            
-            st.title('Потребность в сырье')
-            st.dataframe(raw_materials_df)
-
-    except Exception as e:
-        st.warning(f"Ошибка при обработке данных о сырье: {e}")
+        
+        st.title('Потребность в сырье')
+        st.dataframe(raw_materials_df)
 
     def to_excel():
         output = BytesIO()
