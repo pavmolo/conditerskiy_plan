@@ -98,13 +98,15 @@ if master_data_file and plan_file:
 
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
 
-    with st.expander("Посмотреть таблицы"):
+    with st.expander("Посмотреть почасовые планы по ячейкам"):
         st.title('План по ячейкам')
         for df in dataframes:
             cell_name = df['cell'].iloc[0]
             st.markdown(f"### {cell_name}")
             st.dataframe(df.drop(columns=['cell']))
-
+            
+    with st.expander("Посмотреть данные по сырью и время окончания работы по ячейкам"):
+        st.title('План по сырью')
         try:
             cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
             #st.write("Данные о сырье до объединения:")
@@ -127,6 +129,7 @@ if master_data_file and plan_file:
         raw_materials_df = raw_materials_df.sort_values(by=['hour_interval', 'raw_materials'])
         st.write("Данные о сырье после объединения:")
         st.dataframe(raw_materials_df)
+        st.title('Время окончания работы по ячейкам')
         def get_final_times(dataframes):
             final_times_list = []
             for df in dataframes:
