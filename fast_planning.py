@@ -73,6 +73,7 @@ def calculate_raw_materials_from_dfs(dataframes, cream_data):
     merged_data['total_gr'] = merged_data['operations_count'] * merged_data['gr']
     
     raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
+    
     return raw_materials_df[raw_materials_df['total_gr'] > 0]
 
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
@@ -129,7 +130,7 @@ if master_data_file and plan_file:
         cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
 
     raw_materials_df = calculate_raw_materials_from_dfs(dataframes, cream_data)
-
+    raw_materials_df = raw_materials_df.astype(str)
     st.write("Данные о сырье после объединения:")
     st.dataframe(raw_materials_df)
 
