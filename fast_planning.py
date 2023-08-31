@@ -60,8 +60,6 @@ def distribute_operations(time_mode_var, cycles, plan):
 
     return dfs
 
-missing_values = merged_data[~merged_data['hour_interval'].isin(time_mode['start'])]['hour_interval'].unique()
-st.write("Значения hour_interval, отсутствующие в time_mode:", missing_values)
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
 col1, col2 = st.columns(2)
@@ -121,15 +119,10 @@ if master_data_file and plan_file:
 
     # Объединяем данные без использования категориальных данных
     all_data_non_cat = pd.concat(dataframes).astype(str)
+    # Объединяем по столбцам 'operation' и 'sku'
     merged_data = all_data_non_cat.merge(cream_data, left_on='operation', right_on='sku', how='inner')
-    # Устанавливаем порядок категорий для столбца 'hour_interval'
-    merged_data['hour_interval'] = pd.Categorical(merged_data['hour_interval'], categories=time_mode_data['hour_interval'], ordered=True)
-
-    # Группируем и суммируем данные
+    merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
     raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
-
-    # Сортируем данные по временным окнам
-    raw_materials_df = raw_materials_df.sort_values(by='hour_interval')
 
     st.write("Данные о сырье после объединения:")
     st.dataframe(raw_materials_df)
