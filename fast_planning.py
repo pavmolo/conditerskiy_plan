@@ -105,42 +105,42 @@ if master_data_file and plan_file:
             st.markdown(f"### {cell_name}")
             st.dataframe(df.drop(columns=['cell']))
 
-    try:
-        cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
-        #st.write("Данные о сырье до объединения:")
-        #st.dataframe(cream_data)
-    except Exception as e:
-        st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
-        cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
-
-    # Проверим содержимое all_data
-    #st.write("Содержимое all_data:")
-    #st.dataframe(pd.concat(dataframes))
-
-    # Объединяем данные без использования категориальных данных
-    all_data_non_cat = pd.concat(dataframes).astype(str)
-    # Объединяем по столбцам 'operation' и 'sku'
-    merged_data = all_data_non_cat.merge(cream_data, left_on='operation', right_on='sku', how='inner')
-    merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
-    raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
-    raw_materials_df['hour_interval'] = pd.Categorical(raw_materials_df['hour_interval'], categories=time_mode['start'], ordered=True)
-    raw_materials_df = raw_materials_df.sort_values(by=['hour_interval', 'raw_materials'])
-    st.write("Данные о сырье после объединения:")
-    st.dataframe(raw_materials_df)
-    def get_final_times(dataframes):
-        final_times_list = []
-        for df in dataframes:
-            cell_name = df['cell'].iloc[0]
-            final_time_window = df['hour_interval'].iloc[-1]
-            final_times_list.append({
-                'cell': cell_name,
-                'final_time_window': final_time_window
-            })
-        return pd.DataFrame(final_times_list)
+        try:
+            cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
+            #st.write("Данные о сырье до объединения:")
+            #st.dataframe(cream_data)
+        except Exception as e:
+            st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
+            cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
     
-    final_times = get_final_times(dataframes)
-    st.write("Таблица final_times:")
-    st.dataframe(final_times)
+        # Проверим содержимое all_data
+        #st.write("Содержимое all_data:")
+        #st.dataframe(pd.concat(dataframes))
+    
+        # Объединяем данные без использования категориальных данных
+        all_data_non_cat = pd.concat(dataframes).astype(str)
+        # Объединяем по столбцам 'operation' и 'sku'
+        merged_data = all_data_non_cat.merge(cream_data, left_on='operation', right_on='sku', how='inner')
+        merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
+        raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
+        raw_materials_df['hour_interval'] = pd.Categorical(raw_materials_df['hour_interval'], categories=time_mode['start'], ordered=True)
+        raw_materials_df = raw_materials_df.sort_values(by=['hour_interval', 'raw_materials'])
+        st.write("Данные о сырье после объединения:")
+        st.dataframe(raw_materials_df)
+        def get_final_times(dataframes):
+            final_times_list = []
+            for df in dataframes:
+                cell_name = df['cell'].iloc[0]
+                final_time_window = df['hour_interval'].iloc[-1]
+                final_times_list.append({
+                    'cell': cell_name,
+                    'final_time_window': final_time_window
+                })
+            return pd.DataFrame(final_times_list)
+        
+        final_times = get_final_times(dataframes)
+        st.write("Таблица final_times:")
+        st.dataframe(final_times)
 
     def to_excel():
         output = BytesIO()
