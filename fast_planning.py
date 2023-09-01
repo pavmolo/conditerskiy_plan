@@ -67,28 +67,16 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown('''<h3>Файл с мастер данными</h3>''', unsafe_allow_html=True)
     master_data_file = st.file_uploader("Выберите XLSX файл с мастер данными", accept_multiple_files=False)
-    if master_data_file:
-        st.success("Файл с мастер данными успешно загружен!")
 
 with col2:
     st.markdown('''<h3>Файл с планом</h3>''', unsafe_allow_html=True)
     plan_file = st.file_uploader("Выберите XLSX файл с планом", accept_multiple_files=False)
-    if plan_file:
-        st.success("Файл с планом успешно загружен!")
 
 if master_data_file and plan_file:
     cycle_time_table = pd.read_excel(master_data_file, sheet_name='cycle_time_table')
-    st.success("Данные о времени цикла успешно прочитаны!")
-    st.dataframe(cycle_time_table.head())  # выводим первые строки для проверки
     cycle_time_table['cycle_time_sec'] = cycle_time_table['cycle_time_sec'].astype('int')
-    
     time_mode = pd.read_excel(master_data_file, sheet_name='time_mode')
-    st.success("Данные о временных окнах успешно прочитаны!")
-    st.dataframe(time_mode.head())  # выводим первые строки для проверки
-    
     current_plan = pd.read_excel(plan_file, sheet_name='current_date')
-    st.success("Текущий план успешно прочитан!")
-    st.dataframe(current_plan.head())  # выводим первые строки для проверки
 
     time_mode_data = {
         'hour_interval': time_mode['start'],
@@ -109,7 +97,27 @@ if master_data_file and plan_file:
     plan_df = pd.DataFrame(plan_data)
 
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
-    st.success("Расчеты успешно выполнены!")
+
+    # Проверка на наличие позиций в plan, которых нет в cream_data
+    try:
+        cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
+    except Exception as e:
+        st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
+        cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
+
+    missing_positions = set(current_plan['sku']) - set(cream_data['sku'])
+    if missing_positions:
+        st.warning(f"В плане есть позиции, которых нет в данных о сырье: {', '.join(missing_positions)}")
+        raw_materials_df = pd.DataFrame(columns=['hour_interval', 'raw_materials', 'total_gr'])
+    else:
+        # Объединяем данные без использования категориальных данных
+        all_data_non_cat = pd.concat(dataframes).astype(str)
+        # Объединяем по столбцам 'operation' и 'sku'
+        merged_data = all_data_non_cat.merge(cream_data, left_on='operation', right_on='sku', how='inner')
+        merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
+        raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
+        raw_materials_df['hour_interval'] = pd.Categorical(raw_materials_df['hour_interval'], categories=time_mode['start'], ordered=True)
+        raw_materials_df = raw_materials_df.sort_values(by=['hour_interval', 'raw_materials'])
 
     with st.expander("Посмотреть почасовые планы по ячейкам"):
         st.title('План по ячейкам')
@@ -120,20 +128,6 @@ if master_data_file and plan_file:
             
     with st.expander("Посмотреть данные по сырью и время окончания работы по ячейкам"):
         st.title('План по сырью')
-        try:
-            cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
-            st.success("Данные о сырье успешно прочитаны!")
-            st.dataframe(cream_data.head())  # выводим первые строки для проверки
-        except Exception as e:
-            st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
-            cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
-    
-        all_data_non_cat = pd.concat(dataframes).astype(str)
-        merged_data = all_data_non_cat.merge(cream_data, left_on='operation', right_on='sku', how='inner')
-        merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
-        raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
-        raw_materials_df['hour_interval'] = pd.Categorical(raw_materials_df['hour_interval'], categories=time_mode['start'], ordered=True)
-        raw_materials_df = raw_materials_df.sort_values(by=['hour_interval', 'raw_materials'])
         st.write("Данные о сырье после объединения:")
         st.dataframe(raw_materials_df)
         st.title('Время окончания работы по ячейкам')
