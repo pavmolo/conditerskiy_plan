@@ -86,11 +86,11 @@ with col2:
     plan_file = st.file_uploader("Выберите XLSX файл с планом", accept_multiple_files=False)
 
 if master_data_file and plan_file:
-    st.write("Файлы с мастер данными и планом успешно загружены.")
+    #st.write("Файлы с мастер данными и планом успешно загружены.")
     cycle_time_table = pd.read_excel(master_data_file, sheet_name='cycle_time_table')
     time_mode = pd.read_excel(master_data_file, sheet_name='time_mode')
     current_plan = pd.read_excel(plan_file, sheet_name='current_date')
-    st.write("Данные из файлов успешно прочитаны.")
+    #st.write("Данные из файлов успешно прочитаны.")
     
     time_mode_data = {
         'hour_interval': time_mode['start'],
@@ -111,7 +111,7 @@ if master_data_file and plan_file:
     plan_df = pd.DataFrame(plan_data)
     plan_df['quantity'] = plan_df['quantity'].round().astype(int)
 
-    st.write("Данные успешно преобразованы в датафреймы.")
+    #st.write("Данные успешно преобразованы в датафреймы.")
     
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
 
