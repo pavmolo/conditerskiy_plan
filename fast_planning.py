@@ -4,13 +4,11 @@ import pandas as pd
 from io import BytesIO
 
 def distribute_operations(time_mode_var, cycles, plan):
-    # Объединяем план с циклами
     merged_plan = plan.merge(cycles, on='operation', how='left')
     merged_plan['total_time'] = merged_plan['cycle_time'] * merged_plan['quantity']
     unique_cells = merged_plan['cell'].unique()
     dfs = []
 
-    # Распределение операций по ячейкам
     for cell in unique_cells:
         cell_operations = merged_plan[merged_plan['cell'] == cell].copy()
         time_mode_copy = time_mode_var.copy()
@@ -62,7 +60,6 @@ def distribute_operations(time_mode_var, cycles, plan):
 
     return dfs
 
-# Отображение логотипа и заголовка
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
 col1, col2 = st.columns(2)
@@ -113,6 +110,18 @@ if master_data_file and plan_file:
 
     # Если нет позиций в plan, которые требуют сырье, создаем пустой датафрейм
     raw_materials_df = pd.DataFrame(columns=['hour_interval', 'raw_materials', 'total_gr'])
+    
+    if 'cream_data' in master_data_file.sheet_names:
+        cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
+        matching_operations = set(cream_data['operation']).intersection(set(current_plan['sku']))
+        
+        if matching_operations:
+            all_data_non_cat = pd.concat(dataframes).astype(str)
+            merged_data = all_data_non_cat.merge(cream_data, left_on='operation', right_on='sku', how='inner')
+            merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
+            raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
+            raw_materials_df['hour_interval'] = pd.Categorical(raw_materials_df['hour_interval'], categories=time_mode['start'], ordered=True)
+            raw_materials_df = raw_materials_df.sort_values(by=['hour_interval', 'raw_materials'])
 
     with st.expander("Посмотреть почасовые планы по ячейкам"):
         st.title('План по ячейкам')
@@ -123,7 +132,6 @@ if master_data_file and plan_file:
             
     with st.expander("Посмотреть данные по сырью и время окончания работы по ячейкам"):
         st.title('План по сырью')
-        st.write("Данные о сырье после объединения:")
         st.dataframe(raw_materials_df)
         st.title('Время окончания работы по ячейкам')
         def get_final_times(dataframes):
@@ -138,7 +146,6 @@ if master_data_file and plan_file:
             return pd.DataFrame(final_times_list)
         
         final_times = get_final_times(dataframes)
-        st.write("Таблица final_times:")
         st.dataframe(final_times)
 
     def to_excel():
