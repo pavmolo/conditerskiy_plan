@@ -67,7 +67,6 @@ st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
 col1, col2 = st.columns(2)
 
-# Загрузка файлов
 with col1:
     st.markdown('''<h3>Файл с мастер данными</h3>''', unsafe_allow_html=True)
     master_data_file = st.file_uploader("Выберите XLSX файл с мастер данными", accept_multiple_files=False)
@@ -79,15 +78,12 @@ with col2:
 if master_data_file and plan_file:
     st.write("Файлы с мастер данными и планом успешно загружены.")
     
-    # Чтение данных из файлов
     cycle_time_table = pd.read_excel(master_data_file, sheet_name='cycle_time_table')
-    cycle_time_table['cycle_time_sec'] = cycle_time_table['cycle_time_sec'].astype('int')
     time_mode = pd.read_excel(master_data_file, sheet_name='time_mode')
     current_plan = pd.read_excel(plan_file, sheet_name='current_date')
-
+    
     st.write("Данные из файлов успешно прочитаны.")
     
-    # Создание датафреймов для дальнейших расчетов
     time_mode_data = {
         'hour_interval': time_mode['start'],
         'working_seconds': time_mode['duration']
@@ -105,40 +101,18 @@ if master_data_file and plan_file:
     time_mode_df = pd.DataFrame(time_mode_data)
     cycles_df = pd.DataFrame(cycles_data)
     plan_df = pd.DataFrame(plan_data)
-
-    st.write("Данные успешно преобразованы в датафреймы.")
     
-    dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
+    st.write("Данные успешно преобразованы в датафреймы.")
 
+    dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
+    
     if not dataframes:
         st.write("Ошибка при распределении операций по ячейкам.")
     else:
         st.write("Операции успешно распределены по ячейкам.")
-    
-    # Проверка на наличие позиций в plan, которых нет в cream_data
-    try:
-        cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
-        st.write("Данные о сырье успешно загружены.")
-    except Exception as e:
-        st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
-        cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
-    
-    missing_positions = set(current_plan['sku']) - set(cream_data['operation'])
-    if missing_positions:
-        st.warning(f"В плане есть позиции, которых нет в данных о сырье: {', '.join(missing_positions)}")
-        raw_materials_df = pd.DataFrame(columns=['hour_interval', 'raw_materials', 'total_gr'])
-    else:
-        st.write("Все позиции из плана присутствуют в данных о сырье.")
-        # Объединяем данные без использования категориальных данных
-        all_data_non_cat = pd.concat(dataframes).astype(str)
-        # Объединяем по столбцам 'operation' и 'sku'
-        merged_data = all_data_non_cat.merge(cream_data, left_on='operation', right_on='operation', how='inner')
-        merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
-        raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
-        raw_materials_df['hour_interval'] = pd.Categorical(raw_materials_df['hour_interval'], categories=time_mode['start'], ordered=True)
-        raw_materials_df = raw_materials_df.sort_values(by=['hour_interval', 'raw_materials'])
-    
-    st.write("Данные успешно объединены и создан датафрейм raw_materials_df.")
+
+    # Если нет позиций в plan, которые требуют сырье, создаем пустой датафрейм
+    raw_materials_df = pd.DataFrame(columns=['hour_interval', 'raw_materials', 'total_gr'])
 
     with st.expander("Посмотреть почасовые планы по ячейкам"):
         st.title('План по ячейкам')
