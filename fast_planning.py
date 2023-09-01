@@ -31,30 +31,30 @@ def distribute_operations(time_mode_var, cycles, plan):
             while total_time > 0 and time_index < len(time_mode_copy):
                 st.write(f"Внутри цикла обработки времени для операции: {operation}. Оставшееся время: {total_time}. Индекс времени: {time_index}.")
                 time_row = time_mode_copy.iloc[time_index]
-                        
-            if time_row['remaining_time'] < cycle_time:
-                time_index += 1
-                if time_index >= len(time_mode_copy):
-                    st.write(f"Достигнут конец временного режима для операции: {operation}.")
+                            
+                if time_row['remaining_time'] < cycle_time:
+                    time_index += 1
+                    if time_index >= len(time_mode_copy):
+                        st.write(f"Достигнут конец временного режима для операции: {operation}.")
+                        break
+                    time_row = time_mode_copy.iloc[time_index]
+                    continue
+                
+                operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
+                
+                if operations_count > 0:
+                    cell_result.append({
+                        'hour_interval': time_row['hour_interval'],
+                        'operation': operation,
+                        'operations_count': operations_count
+                    })
+                
+                    allocated_time = operations_count * cycle_time
+                    total_time -= allocated_time
+                    time_mode_copy.at[time_index, 'remaining_time'] -= allocated_time
+                
+                if total_time <= 0:
                     break
-                time_row = time_mode_copy.iloc[time_index]
-                continue
-            
-             operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
-            
-             if operations_count > 0:
-                 cell_result.append({
-                     'hour_interval': time_row['hour_interval'],
-                     'operation': operation,
-                     'operations_count': operations_count
-                 })
-            
-                 allocated_time = operations_count * cycle_time
-                 total_time -= allocated_time
-                 time_mode_copy.at[time_index, 'remaining_time'] -= allocated_time
-            
-             if total_time <= 0:
-                 break
     
         if cell_result:
             df = pd.DataFrame(cell_result)
