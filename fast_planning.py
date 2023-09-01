@@ -148,12 +148,13 @@ if master_data_file and plan_file:
     def to_excel():
         output = BytesIO()
         writer = pd.ExcelWriter(output, engine='xlsxwriter')
-        with writer as w:
-            for df in dataframes:
-                df.to_excel(w, sheet_name=df['cell'].iloc[0].replace('/', '-'))
-            raw_materials_df.to_excel(w, sheet_name='cream_data')  # Добавляем таблицу с сырьем в отдельный лист
-            final_times.to_excel(w, sheet_name='final_times')  # Добавляем таблицу final_times в отдельный лист
-        writer._save()
+        
+        for df in dataframes:
+            df.to_excel(writer, sheet_name=df['cell'].iloc[0].replace('/', '-'))
+        raw_materials_df.to_excel(writer, sheet_name='cream_data')  # Добавляем таблицу с сырьем в отдельный лист
+        final_times.to_excel(writer, sheet_name='final_times')  # Добавляем таблицу final_times в отдельный лист
+        
+        writer.save()
         return output.getvalue()
 
     df_xlsx = to_excel()
