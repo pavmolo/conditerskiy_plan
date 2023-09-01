@@ -110,7 +110,10 @@ if master_data_file and plan_file:
     
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
 
-    st.write("Операции успешно распределены по ячейкам.")
+    if not dataframes:
+        st.write("Ошибка при распределении операций по ячейкам.")
+    else:
+        st.write("Операции успешно распределены по ячейкам.")
     
     # Проверка на наличие позиций в plan, которых нет в cream_data
     try:
@@ -118,7 +121,7 @@ if master_data_file and plan_file:
     except Exception as e:
         st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
         cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
-
+    
     missing_positions = set(current_plan['sku']) & set(cream_data['operation'])
     if not missing_positions:
         st.warning(f"В плане нет позиций, которые присутствуют в данных о сырье.")
@@ -132,6 +135,8 @@ if master_data_file and plan_file:
         raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
         raw_materials_df['hour_interval'] = pd.Categorical(raw_materials_df['hour_interval'], categories=time_mode['start'], ordered=True)
         raw_materials_df = raw_materials_df.sort_values(by=['hour_interval', 'raw_materials'])
+
+    st.write("Данные успешно объединены и создан датафрейм raw_materials_df.")
 
     with st.expander("Посмотреть почасовые планы по ячейкам"):
         st.title('План по ячейкам')
