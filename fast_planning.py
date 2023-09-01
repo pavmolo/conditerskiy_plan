@@ -4,14 +4,12 @@ import pandas as pd
 from io import BytesIO
 
 def distribute_operations(time_mode_var, cycles, plan):
-    st.write("Начало функции distribute_operations.")
     merged_plan = plan.merge(cycles, on='operation', how='left')
     merged_plan['total_time'] = merged_plan['cycle_time'] * merged_plan['quantity']
     unique_cells = merged_plan['cell'].unique()
     dfs = []
 
     for cell in unique_cells:
-        st.write(f"Обработка ячейки: {cell}")
         cell_operations = merged_plan[merged_plan['cell'] == cell].copy()
         time_mode_copy = time_mode_var.copy()
         time_mode_copy['remaining_time'] = time_mode_copy['working_seconds']
@@ -20,7 +18,6 @@ def distribute_operations(time_mode_var, cycles, plan):
     
         time_index = 0
         for _, operation_row in cell_operations.iterrows():
-            st.write(f"Обработка операции: {operation_row['operation']}")
             operation = operation_row['operation']
             total_time = operation_row['total_time']
             cycle_time = operation_row['cycle_time']
@@ -29,30 +26,32 @@ def distribute_operations(time_mode_var, cycles, plan):
                 continue
     
             while total_time > 0 and time_index < len(time_mode_copy):
-                st.write(f"Внутри цикла обработки времени для операции: {operation}. Оставшееся время: {total_time}. Индекс времени: {time_index}.")
                 time_row = time_mode_copy.iloc[time_index]
-                            
+                
                 if time_row['remaining_time'] < cycle_time:
                     time_index += 1
                     if time_index >= len(time_mode_copy):
-                        st.write(f"Достигнут конец временного режима для операции: {operation}.")
                         break
                     time_row = time_mode_copy.iloc[time_index]
                     continue
-                
+    
                 operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
-                
+    
+                if operations_count == 0:
+                    time_index += 1
+                    continue
+    
                 if operations_count > 0:
                     cell_result.append({
                         'hour_interval': time_row['hour_interval'],
                         'operation': operation,
                         'operations_count': operations_count
                     })
-                
+    
                     allocated_time = operations_count * cycle_time
                     total_time -= allocated_time
                     time_mode_copy.at[time_index, 'remaining_time'] -= allocated_time
-                
+    
                 if total_time <= 0:
                     break
     
@@ -63,7 +62,6 @@ def distribute_operations(time_mode_var, cycles, plan):
             df['cell'] = cell
             dfs.append(df.sort_values(by=['operation', 'hour_interval']))
 
-    st.write("Конец функции distribute_operations.")
     return dfs
 
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
@@ -81,11 +79,10 @@ with col2:
 if master_data_file and plan_file:
     st.write("Файлы с мастер данными и планом успешно загружены.")
     cycle_time_table = pd.read_excel(master_data_file, sheet_name='cycle_time_table')
-    cycle_time_table['cycle_time_sec'] = cycle_time_table['cycle_time_sec'].astype('int')
     time_mode = pd.read_excel(master_data_file, sheet_name='time_mode')
     current_plan = pd.read_excel(plan_file, sheet_name='current_date')
     st.write("Данные из файлов успешно прочитаны.")
-
+    
     time_mode_data = {
         'hour_interval': time_mode['start'],
         'working_seconds': time_mode['duration']
@@ -103,29 +100,11 @@ if master_data_file and plan_file:
     time_mode_df = pd.DataFrame(time_mode_data)
     cycles_df = pd.DataFrame(cycles_data)
     plan_df = pd.DataFrame(plan_data)
+    plan_df['quantity'] = plan_df['quantity'].round().astype(int)
+
     st.write("Данные успешно преобразованы в датафреймы.")
-
+    
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
-    
-    if not dataframes:
-        st.write("Ошибка при распределении операций по ячейкам.")
-    else:
-        st.write("Операции успешно распределены по ячейкам.")
-
-    # Если нет позиций в plan, которые требуют сырье, создаем пустой датафрейм
-    raw_materials_df = pd.DataFrame(columns=['hour_interval', 'raw_materials', 'total_gr'])
-    
-    if 'cream_data' in master_data_file.sheet_names:
-        cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
-        matching_operations = set(cream_data['operation']).intersection(set(current_plan['sku']))
-        
-        if matching_operations:
-            all_data_non_cat = pd.concat(dataframes).astype(str)
-            merged_data = all_data_non_cat.merge(cream_data, left_on='operation', right_on='sku', how='inner')
-            merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
-            raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
-            raw_materials_df['hour_interval'] = pd.Categorical(raw_materials_df['hour_interval'], categories=time_mode['start'], ordered=True)
-            raw_materials_df = raw_materials_df.sort_values(by=['hour_interval', 'raw_materials'])
 
     with st.expander("Посмотреть почасовые планы по ячейкам"):
         st.title('План по ячейкам')
@@ -136,18 +115,18 @@ if master_data_file and plan_file:
             
     with st.expander("Посмотреть данные по сырью и время окончания работы по ячейкам"):
         st.title('План по сырью')
+        try:
+            cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
+        except:
+            cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
+    
+        all_data_non_cat = pd.concat(dataframes).astype(str)
+        merged_data = all_data_non_cat.merge(cream_data, left_on='operation', right_on='sku', how='inner')
+        merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
+        raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
+        raw_materials_df['hour_interval'] = pd.Categorical(raw_materials_df['hour_interval'], categories=time_mode['start'], ordered=True)
+        raw_materials_df = raw_materials_df.sort_values(by=['hour_interval', 'raw_materials'])
         st.dataframe(raw_materials_df)
-        st.title('Время окончания работы по ячейкам')
-        def get_final_times(dataframes):
-            final_times_list = []
-            for df in dataframes:
-                cell_name = df['cell'].iloc[0]
-                final_time_window = df['hour_interval'].iloc[-1]
-                final_times_list.append({
-                    'cell': cell_name,
-                    'final_time_window': final_time_window
-                })
-            return pd.DataFrame(final_times_list)
         
         final_times = get_final_times(dataframes)
         st.dataframe(final_times)
@@ -158,10 +137,21 @@ if master_data_file and plan_file:
         with writer as w:
             for df in dataframes:
                 df.to_excel(w, sheet_name=df['cell'].iloc[0].replace('/', '-'))
-            raw_materials_df.to_excel(w, sheet_name='cream_data')  # Добавляем таблицу с сырьем в отдельный лист
-            final_times.to_excel(w, sheet_name='final_times')  # Добавляем таблицу final_times в отдельный лист
+            raw_materials_df.to_excel(w, sheet_name='cream_data')
+            final_times.to_excel(w, sheet_name='final_times')
         writer._save()
         return output.getvalue()
 
     df_xlsx = to_excel()
     st.download_button(label='📥 Скачать план в Excel', data=df_xlsx, file_name='Safia_Plan.xlsx')
+
+def get_final_times(dataframes):
+    final_times_list = []
+    for df in dataframes:
+        cell_name = df['cell'].iloc[0]
+        final_time_window = df['hour_interval'].iloc[-1]
+        final_times_list.append({
+            'cell': cell_name,
+            'final_time_window': final_time_window
+        })
+    return pd.DataFrame(final_times_list)
