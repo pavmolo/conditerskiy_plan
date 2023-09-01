@@ -118,15 +118,17 @@ if master_data_file and plan_file:
     # Проверка на наличие позиций в plan, которых нет в cream_data
     try:
         cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
+        st.write("Данные о сырье успешно загружены.")
     except Exception as e:
         st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
         cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
     
-    missing_positions = set(current_plan['sku']) & set(cream_data['operation'])
-    if not missing_positions:
-        st.warning(f"В плане нет позиций, которые присутствуют в данных о сырье.")
+    missing_positions = set(current_plan['sku']) - set(cream_data['operation'])
+    if missing_positions:
+        st.warning(f"В плане есть позиции, которых нет в данных о сырье: {', '.join(missing_positions)}")
         raw_materials_df = pd.DataFrame(columns=['hour_interval', 'raw_materials', 'total_gr'])
     else:
+        st.write("Все позиции из плана присутствуют в данных о сырье.")
         # Объединяем данные без использования категориальных данных
         all_data_non_cat = pd.concat(dataframes).astype(str)
         # Объединяем по столбцам 'operation' и 'sku'
@@ -135,7 +137,7 @@ if master_data_file and plan_file:
         raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
         raw_materials_df['hour_interval'] = pd.Categorical(raw_materials_df['hour_interval'], categories=time_mode['start'], ordered=True)
         raw_materials_df = raw_materials_df.sort_values(by=['hour_interval', 'raw_materials'])
-
+    
     st.write("Данные успешно объединены и создан датафрейм raw_materials_df.")
 
     with st.expander("Посмотреть почасовые планы по ячейкам"):
