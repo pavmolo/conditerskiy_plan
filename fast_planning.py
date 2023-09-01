@@ -63,7 +63,16 @@ def distribute_operations(time_mode_var, cycles, plan):
             dfs.append(df.sort_values(by=['operation', 'hour_interval']))
 
     return dfs
-
+def get_final_times(dataframes):
+    final_times_list = []
+    for df in dataframes:
+        cell_name = df['cell'].iloc[0]
+        final_time_window = df['hour_interval'].iloc[-1]
+        final_times_list.append({
+            'cell': cell_name,
+            'final_time_window': final_time_window
+        })
+    return pd.DataFrame(final_times_list)
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
 st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
 col1, col2 = st.columns(2)
@@ -145,13 +154,4 @@ if master_data_file and plan_file:
     df_xlsx = to_excel()
     st.download_button(label='📥 Скачать план в Excel', data=df_xlsx, file_name='Safia_Plan.xlsx')
 
-def get_final_times(dataframes):
-    final_times_list = []
-    for df in dataframes:
-        cell_name = df['cell'].iloc[0]
-        final_time_window = df['hour_interval'].iloc[-1]
-        final_times_list.append({
-            'cell': cell_name,
-            'final_time_window': final_time_window
-        })
-    return pd.DataFrame(final_times_list)
+
