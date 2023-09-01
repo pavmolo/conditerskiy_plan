@@ -73,10 +73,20 @@ with col2:
     plan_file = st.file_uploader("Выберите XLSX файл с планом", accept_multiple_files=False)
 
 if master_data_file and plan_file:
+    st.write("Загружен файл с мастер данными и файл с планом.")
+    
     cycle_time_table = pd.read_excel(master_data_file, sheet_name='cycle_time_table')
+    st.write("Первые строки из cycle_time_table:")
+    st.dataframe(cycle_time_table.head())
+    
     cycle_time_table['cycle_time_sec'] = cycle_time_table['cycle_time_sec'].astype('int')
     time_mode = pd.read_excel(master_data_file, sheet_name='time_mode')
+    st.write("Первые строки из time_mode:")
+    st.dataframe(time_mode.head())
+    
     current_plan = pd.read_excel(plan_file, sheet_name='current_date')
+    st.write("Первые строки из current_plan:")
+    st.dataframe(current_plan.head())
 
     time_mode_data = {
         'hour_interval': time_mode['start'],
@@ -98,16 +108,25 @@ if master_data_file and plan_file:
 
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
 
-    # Проверка на наличие позиций в plan, которых нет в cream_data
+    with st.expander("Посмотреть почасовые планы по ячейкам"):
+        st.title('План по ячейкам')
+        for df in dataframes:
+            cell_name = df['cell'].iloc[0]
+            st.markdown(f"### {cell_name}")
+            st.dataframe(df.drop(columns=['cell']))
+
+    # Проверка на наличие позиций в cream_data, которых нет в plan
     try:
         cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
+        st.write("Первые строки из cream_data:")
+        st.dataframe(cream_data.head())
     except Exception as e:
         st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
         cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
 
-    missing_positions = set(current_plan['sku']) - set(cream_data['sku'])
+    missing_positions = set(cream_data['sku']) - set(current_plan['sku'])
     if missing_positions:
-        st.warning(f"В плане есть позиции, которых нет в данных о сырье: {', '.join(missing_positions)}")
+        st.warning(f"В данных о сырье есть позиции, которых нет в плане: {', '.join(missing_positions)}")
         raw_materials_df = pd.DataFrame(columns=['hour_interval', 'raw_materials', 'total_gr'])
     else:
         # Объединяем данные без использования категориальных данных
@@ -119,16 +138,8 @@ if master_data_file and plan_file:
         raw_materials_df['hour_interval'] = pd.Categorical(raw_materials_df['hour_interval'], categories=time_mode['start'], ordered=True)
         raw_materials_df = raw_materials_df.sort_values(by=['hour_interval', 'raw_materials'])
 
-    with st.expander("Посмотреть почасовые планы по ячейкам"):
-        st.title('План по ячейкам')
-        for df in dataframes:
-            cell_name = df['cell'].iloc[0]
-            st.markdown(f"### {cell_name}")
-            st.dataframe(df.drop(columns=['cell']))
-            
     with st.expander("Посмотреть данные по сырью и время окончания работы по ячейкам"):
         st.title('План по сырью')
-        st.write("Данные о сырье после объединения:")
         st.dataframe(raw_materials_df)
         st.title('Время окончания работы по ячейкам')
         def get_final_times(dataframes):
@@ -143,7 +154,6 @@ if master_data_file and plan_file:
             return pd.DataFrame(final_times_list)
         
         final_times = get_final_times(dataframes)
-        st.write("Таблица final_times:")
         st.dataframe(final_times)
 
     def to_excel():
