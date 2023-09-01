@@ -78,6 +78,12 @@ if master_data_file and plan_file:
     time_mode = pd.read_excel(master_data_file, sheet_name='time_mode')
     current_plan = pd.read_excel(plan_file, sheet_name='current_date')
 
+    # Проверка на наличие SKU из plan в cycle_time_table
+    missing_skus = current_plan[~current_plan['sku'].isin(cycle_time_table['sku'])]['sku'].tolist()
+    if missing_skus:
+        st.error(f"Ошибка: следующие SKU из плана отсутствуют в cycle_time_table: {', '.join(missing_skus)}")
+        st.stop()  # Останавливаем выполнение остального кода
+
     time_mode_data = {
         'hour_interval': time_mode['start'],
         'working_seconds': time_mode['duration']
@@ -109,19 +115,11 @@ if master_data_file and plan_file:
         st.title('План по сырью')
         try:
             cream_data = pd.read_excel(master_data_file, sheet_name='cream_data')
-            #st.write("Данные о сырье до объединения:")
-            #st.dataframe(cream_data)
         except Exception as e:
             st.warning("Не удалось загрузить данные о сырье. Убедитесь, что в файле есть лист 'cream_data'.")
             cream_data = pd.DataFrame(columns=['sku', 'operation', 'raw_materials', 'gr'])
     
-        # Проверим содержимое all_data
-        #st.write("Содержимое all_data:")
-        #st.dataframe(pd.concat(dataframes))
-    
-        # Объединяем данные без использования категориальных данных
         all_data_non_cat = pd.concat(dataframes).astype(str)
-        # Объединяем по столбцам 'operation' и 'sku'
         merged_data = all_data_non_cat.merge(cream_data, left_on='operation', right_on='sku', how='inner')
         merged_data['total_gr'] = merged_data['operations_count'].astype(float) * merged_data['gr'].astype(float)
         raw_materials_df = merged_data.groupby(['hour_interval', 'raw_materials'])['total_gr'].sum().reset_index()
