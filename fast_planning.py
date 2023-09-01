@@ -4,6 +4,7 @@ import pandas as pd
 from io import BytesIO
 
 def distribute_operations(time_mode_var, cycles, plan):
+    st.write("Начало функции distribute_operations.")
     merged_plan = plan.merge(cycles, on='operation', how='left')
     merged_plan['total_time'] = merged_plan['cycle_time'] * merged_plan['quantity']
     unique_cells = merged_plan['cell'].unique()
@@ -58,6 +59,7 @@ def distribute_operations(time_mode_var, cycles, plan):
             df['cell'] = cell
             dfs.append(df.sort_values(by=['operation', 'hour_interval']))
 
+    st.write("Конец функции distribute_operations.")
     return dfs
 
 st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
@@ -74,13 +76,12 @@ with col2:
 
 if master_data_file and plan_file:
     st.write("Файлы с мастер данными и планом успешно загружены.")
-    
     cycle_time_table = pd.read_excel(master_data_file, sheet_name='cycle_time_table')
+    cycle_time_table['cycle_time_sec'] = cycle_time_table['cycle_time_sec'].astype('int')
     time_mode = pd.read_excel(master_data_file, sheet_name='time_mode')
     current_plan = pd.read_excel(plan_file, sheet_name='current_date')
-    
     st.write("Данные из файлов успешно прочитаны.")
-    
+
     time_mode_data = {
         'hour_interval': time_mode['start'],
         'working_seconds': time_mode['duration']
@@ -98,7 +99,6 @@ if master_data_file and plan_file:
     time_mode_df = pd.DataFrame(time_mode_data)
     cycles_df = pd.DataFrame(cycles_data)
     plan_df = pd.DataFrame(plan_data)
-    
     st.write("Данные успешно преобразованы в датафреймы.")
 
     dataframes = distribute_operations(time_mode_df, cycles_df, plan_df)
