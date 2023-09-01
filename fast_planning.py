@@ -29,16 +29,16 @@ def distribute_operations(time_mode_var, cycles, plan):
                 continue
     
            while total_time > 0 and time_index < len(time_mode_copy):
-            st.write(f"Внутри цикла обработки времени для операции: {operation}. Оставшееся время: {total_time}. Индекс времени: {time_index}.")
-            time_row = time_mode_copy.iloc[time_index]
+               st.write(f"Внутри цикла обработки времени для операции: {operation}. Оставшееся время: {total_time}. Индекс времени: {time_index}.")
+               time_row = time_mode_copy.iloc[time_index]
                         
-            if time_row['remaining_time'] < cycle_time:
-                time_index += 1
-                if time_index >= len(time_mode_copy):
-                    st.write(f"Достигнут конец временного режима для операции: {operation}.")
-                    break
-                time_row = time_mode_copy.iloc[time_index]
-                continue
+           if time_row['remaining_time'] < cycle_time:
+               time_index += 1
+               if time_index >= len(time_mode_copy):
+                   st.write(f"Достигнут конец временного режима для операции: {operation}.")
+                   break
+               time_row = time_mode_copy.iloc[time_index]
+               continue
             
             operations_count = np.floor(min(total_time / cycle_time, time_row['remaining_time'] / cycle_time))
             
