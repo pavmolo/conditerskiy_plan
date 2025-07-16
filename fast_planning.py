@@ -73,8 +73,7 @@ def get_final_times(dataframes):
             'final_time_window': final_time_window
         })
     return pd.DataFrame(final_times_list)
-st.markdown('''<a href="http://kaizen-consult.ru/"><img src='https://www.kaizen.com/images/kaizen_logo.png' style="width: 50%; margin-left: 25%; margin-right: 25%; text-align: center;"></a><p>''', unsafe_allow_html=True)
-st.markdown('''<h1>Приложение для разбивки плана по ячейкам и определения потребности в сырье по часам</h1>''', unsafe_allow_html=True)
+
 col1, col2 = st.columns(2)
 
 with col1:
